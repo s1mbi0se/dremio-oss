@@ -154,10 +154,14 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"hashSHA1(c0)", "abc", "a9993e364706816aba3e25717850c26c9cd0d89d"},
       {"hashSHA1(c0)", NULL_BIGINT, nullHash1},
       {"hashSHA1(c0)", 12345, "7963aaf7bfffbb0bc0ee3d461063d76073f6b790"},
+      {"hashSHA1(c0)", NULL_DECIMAL, nullHash1},
+      {"hashSHA1(c0)", BigDecimal.valueOf(10, 2), "6de872e6538d84ea0c18f8bfe328c2cd0fdb8b03"},
       {"hashSHA256(c0)", NULL_VARCHAR, nullHash256},
       {"hashSHA256(c0)", "abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"},
       {"hashSHA256(c0)", NULL_BIGINT, nullHash256},
       {"hashSHA256(c0)", 12345, "2dbcbc659508f21be09acdbe180465ded85327f3fd4c00cc746bf3cb4838e95d"},
+      {"hashSHA256(c0)", NULL_DECIMAL, nullHash256},
+      {"hashSHA256(c0)", BigDecimal.valueOf(10, 2), "3aeae1c06c3eeeb5c12b00ddfe28e936ceeca6e735b275915fe3381e1c9def4f"},
     });
   }
 
