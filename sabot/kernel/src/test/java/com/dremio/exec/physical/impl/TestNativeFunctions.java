@@ -38,6 +38,7 @@ import org.apache.arrow.gandiva.evaluator.FunctionSignature;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -980,6 +981,18 @@ public class TestNativeFunctions extends BaseTestFunction {
       Assert.assertTrue(re.getCause().getCause().getMessage().contains("Index in split_part must be positive, value provided was 0"));
       throw re;
     }
+  }
+
+  @Test
+  public void testCastTime() throws Exception {
+    testFunctions(new Object[][]{
+      {"extractHour(castTIME(c0))", ts("2000-05-01T10:20:34"), 10L},
+      {"extractMinute(castTIME(c0))", ts("2000-05-01T10:20:34"), 20L},
+      {"extractSecond(castTIME(c0))", ts("2000-05-01T10:20:34"), 34L},
+      {"extractHour(castTIME(c0))", ts("1985-05-01T15:13:08"), 15L},
+      {"extractMinute(castTIME(c0))", ts("1985-05-01T15:13:08"), 13L},
+      {"extractSecond(castTIME(c0))", ts("1985-05-01T15:13:08"), 8L},
+    });
   }
 
   @Test
