@@ -15,22 +15,6 @@
  */
 package com.dremio.exec.physical.impl;
 
-import static com.dremio.sabot.Fixtures.NULL_BIGINT;
-import static com.dremio.sabot.Fixtures.NULL_BINARY;
-import static com.dremio.sabot.Fixtures.NULL_BOOLEAN;
-import static com.dremio.sabot.Fixtures.NULL_DECIMAL;
-import static com.dremio.sabot.Fixtures.NULL_DOUBLE;
-import static com.dremio.sabot.Fixtures.NULL_FLOAT;
-import static com.dremio.sabot.Fixtures.NULL_INT;
-import static com.dremio.sabot.Fixtures.NULL_VARCHAR;
-import static com.dremio.sabot.Fixtures.date;
-import static com.dremio.sabot.Fixtures.interval_day;
-import static com.dremio.sabot.Fixtures.t;
-import static com.dremio.sabot.Fixtures.th;
-import static com.dremio.sabot.Fixtures.time;
-import static com.dremio.sabot.Fixtures.tr;
-import static com.dremio.sabot.Fixtures.ts;
-
 import java.math.BigDecimal;
 import java.util.Arrays;
 
@@ -56,6 +40,8 @@ import com.dremio.sabot.Fixtures.Table;
 import com.dremio.sabot.op.llvm.expr.GandivaPushdownSieveHelper;
 import com.dremio.sabot.op.project.ProjectOperator;
 import com.google.common.collect.Lists;
+
+import static com.dremio.sabot.Fixtures.*;
 
 /*
  * This class tests native (LLVM) implementation of functions.
@@ -160,18 +146,32 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
-  @Ignore("Test reproducing error")
   public void testHashSHA() throws Exception {
-    testFunctions(new Object[][]{
-      {"hashSHA1(c0)", "abc", "aa9993e364706816aba3e25717850c26c9cd0d89d"},
+    String nullHash1 = "da39a3ee5e6b4b0d3255bfef95601890afd80709";
+    String nullHash256 = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+    testFunctionsCompiledOnly(new Object[][]{
+      {"hashSHA1(c0)", NULL_VARCHAR, nullHash1},
+      {"hashSHA1(c0)", "abc", "a9993e364706816aba3e25717850c26c9cd0d89d"},
+      {"hashSHA1(c0)", NULL_BIGINT, nullHash1},
+      {"hashSHA1(c0)", 12345, "7963aaf7bfffbb0bc0ee3d461063d76073f6b790"},
+      {"hashSHA256(c0)", NULL_VARCHAR, nullHash256},
+      {"hashSHA256(c0)", "abc", "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"},
+      {"hashSHA256(c0)", NULL_BIGINT, nullHash256},
+      {"hashSHA256(c0)", 12345, "2dbcbc659508f21be09acdbe180465ded85327f3fd4c00cc746bf3cb4838e95d"},
     });
   }
 
   @Test
-  @Ignore("Test reproducing error")
   public void testLastDay() throws Exception {
-    testFunctions(new Object[][]{
+    testFunctionsCompiledOnly(new Object[][]{
       {"extractDay(last_day(c0))", date("2000-05-01"), 31L},
+      {"extractDay(last_day(c0))", date("2000-06-01"), 30L},
+      {"extractDay(last_day(c0))", date("2021-12-12"), 31L},
+      {"extractDay(last_day(c0))", NULL_DATE, NULL_BIGINT},
+      {"extractDay(last_day(c0))", ts("2000-05-01"), 31L},
+      {"extractDay(last_day(c0))", ts("2000-06-01"), 30L},
+      {"extractDay(last_day(c0))", ts("2021-12-12"), 31L},
+      {"extractDay(last_day(c0))", NULL_TIMESTAMP, NULL_BIGINT},
     });
   }
 
