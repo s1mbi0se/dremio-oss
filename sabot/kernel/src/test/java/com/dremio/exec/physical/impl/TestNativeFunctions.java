@@ -159,6 +159,22 @@ public class TestNativeFunctions extends BaseTestFunction {
     });
   }
 
+  @Test
+  @Ignore("Test reproducing error")
+  public void testHashSHA() throws Exception {
+    testFunctions(new Object[][]{
+      {"hashSHA1(c0)", "abc", "aa9993e364706816aba3e25717850c26c9cd0d89d"},
+    });
+  }
+
+  @Test
+  @Ignore("Test reproducing error")
+  public void testLastDay() throws Exception {
+    testFunctions(new Object[][]{
+      {"extractDay(last_day(c0))", date("2000-05-01"), 31L},
+    });
+  }
+
   @Test(expected = RuntimeException.class)
   public void testCastTimestampWithMicros() throws Exception {
     try {
