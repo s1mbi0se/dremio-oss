@@ -107,6 +107,36 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testTrigonometry() throws Exception {
+    testFunctions(new Object[][]{
+      {"sin(c0)", 0, Math.sin(0)},
+      {"sin(c0)", Math.PI, Math.sin(Math.PI)},
+      {"cos(c0)", 0, Math.cos(0)},
+      {"cos(c0)", Math.PI, Math.cos(Math.PI)},
+      {"asin(c0)", 0, Math.asin(0)},
+      {"asin(c0)", Math.PI, Math.asin(Math.PI)},
+      {"acos(c0)", 0, Math.acos(0)},
+      {"acos(c0)", Math.PI, Math.acos(Math.PI)},
+      {"tan(c0)", 0, Math.tan(0)},
+      {"tan(c0)", Math.PI, Math.tan(Math.PI)},
+      {"atan(c0)", 0, Math.atan(0)},
+      {"atan(c0)", Math.PI, Math.atan(Math.PI)},
+      {"sinh(c0)", 0, Math.sinh(0)},
+      {"sinh(c0)", Math.PI, Math.sinh(Math.PI)},
+      {"cosh(c0)", 0, Math.cosh(0)},
+      {"cosh(c0)", Math.PI, Math.cosh(Math.PI)},
+      {"tanh(c0)", 0, Math.tanh(0)},
+      {"tanh(c0)", Math.PI, Math.tanh(Math.PI)},
+      {"atan2(c0, c1)", 1, 0, Math.atan2(1, 0)},
+      {"atan2(c0, c1)", -1, 0, Math.atan2(-1, 0)},
+      {"radians(c0)", 0, Math.toRadians(0)},
+      {"radians(c0)", 180, Math.toRadians(180)},
+      {"degrees(c0)", 0, Math.toDegrees(0)},
+      {"degrees(c0)", Math.PI, Math.toDegrees(Math.PI)},
+    });
+  }
+
+  @Test
   public void testCastDate() throws Exception {
     testFunctions(new Object[][]{
       {"extractYear(castDATE(c0))","0079:10:10", 79l}
