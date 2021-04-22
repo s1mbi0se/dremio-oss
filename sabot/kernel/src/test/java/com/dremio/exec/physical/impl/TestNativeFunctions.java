@@ -1012,6 +1012,15 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testConvertReplaceUTF8() throws Exception {
+    testFunctions(new Object[][]{
+      {"convert_replaceUTF8(binary_string(c0), 'a')", "ABC", "ABC"},
+      {"convert_replaceUTF8(binary_string(c0), 'z')", "ABC-\\xf8-\\x41\\x42\\x43", "ABC-z-ABC"},
+      {"convert_replaceUTF8(binary_string(c0), 'z')", "\\xf8-ABC-\\xf8-\\x41\\x42\\x43-\\xf8", "z-ABC-z-ABC-z"},
+    });
+  }
+
+  @Test
   public void testBinaryString() throws Exception {
     testFunctions(new Object[][]{
       {"convert_from(binary_string(c0), 'UTF8')", "\\x41\\x42\\x43", "ABC"},
