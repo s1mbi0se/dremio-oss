@@ -908,6 +908,32 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCastNumericToVarchar() throws Exception {
+    testFunctions(new Object[][]{
+      {"castVARCHAR(c0, c1)", 12345, 0, ""},
+      {"castVARCHAR(c0, c1)", 12345, 2, "12"},
+      {"castVARCHAR(c0, c1)", -12345, 6, "-12345"},
+      {"castVARCHAR(c0, c1)", 1.2345, 5, "1.234"},
+      {"castVARCHAR(c0, c1)", 0.00001, 7, "1.0E-5"},
+      {"castVARCHAR(c0, c1)", 0.00099999f, 10, "9.9999E-4"},
+      {"castVARCHAR(c0, c1)", 10.0000000000, 13, "10.0"},
+    });
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCastNumericToVarcharNegativeLength() throws Exception {
+    try {
+      testFunctions(new Object[][]{
+        {"castVARCHAR(c0, c1)", 12345, -1, ""}
+      });
+    } catch (RuntimeException re) {
+      Assert.assertTrue(re.getCause().getCause().getMessage()
+        .contains("Buffer length can not be negative"));
+      throw re;
+    }
+  }
+
+  @Test
   public void testCastBoolToVarchar() throws Exception {
     testFunctions(new Object[][]{
       {"castVARCHAR(c0, c1)", true, 2, "tr"},
