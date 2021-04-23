@@ -132,6 +132,8 @@ public class OrInConverter {
     final CompleteType type = arg0.getCompleteType();
 
     if (!supportedTypes.contains(type)) {
+      // checks if it supports decimals independently of its scale or precision.
+      if (!(type.isDecimal() && supportedTypes.contains(CompleteType.DECIMAL)))
       return null;
     }
 

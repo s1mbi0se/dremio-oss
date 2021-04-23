@@ -612,6 +612,25 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testInOptimizationDecimal() {
+    try {
+      InExpression.COUNT.set(0);
+      testFunctions(new Object[][]{
+        {"booleanOr(c0 = cast(1l as DECIMAL(38, 0)), c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 != cast(10l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), c0 " +
+          "= cast(1l as DECIMAL(38, 0)), c0 = cast(1l as DECIMAL(38, 0)))", BigDecimal.valueOf(10, 0), false}}
+      );
+      Assert.assertEquals(1, InExpression.COUNT.get());
+    } finally {
+      InExpression.COUNT.set(0);
+    }
+  }
+  @Test
   public void testInOptimizationWithStringCasts() {
     try {
         testContext.getOptions().setOption(OptionValue.createString(
