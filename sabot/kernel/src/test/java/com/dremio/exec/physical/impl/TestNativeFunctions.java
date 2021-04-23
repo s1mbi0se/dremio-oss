@@ -615,10 +615,21 @@ public class TestNativeFunctions extends BaseTestFunction {
   public void testInOptimizationDecimal() {
     try {
       InExpression.COUNT.set(0);
-      testFunctions(new Object[][]{
+      testFunctionsCompiledOnly(new Object[][]{
         {"booleanOr(c0 = cast(1l as DECIMAL(38, 0)), c0 = cast(1l as DECIMAL(38, 0)), " +
           "c0 = cast(1l as DECIMAL(38, 0)), " +
           "c0 != cast(10l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
+          "c0 = cast(1l as DECIMAL(38, 0)), " +
           "c0 = cast(1l as DECIMAL(38, 0)), " +
           "c0 = cast(1l as DECIMAL(38, 0)), " +
           "c0 = cast(1l as DECIMAL(38, 0)), " +

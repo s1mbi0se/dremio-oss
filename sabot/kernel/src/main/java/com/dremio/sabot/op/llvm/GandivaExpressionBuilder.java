@@ -231,16 +231,18 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
           }
         }
         return TreeBuilder.makeInExpressionString(TreeBuilder.makeField(field), stringValues);
-      }else if(CompleteType.DECIMAL.equals(constantType)){
+      }else if(constantType.isDecimal()){
         Set<BigDecimal> decimalValues = Sets.newHashSet();
         for (LogicalExpression constant: in.getConstants()){
           if (constant instanceof DecimalExpression){
             decimalValues.add(((DecimalExpression) constant).getDecimal());
           } else if (constant instanceof FunctionHolderExpression){
             LogicalExpression val = ((FunctionHolderExpression) constant).args.get(0);
-            if (val instanceof DecimalExpression){
-              DecimalExpression expr = (DecimalExpression) val;
-              decimalValues.add(expr.getDecimal());
+            LogicalExpression scaleVal = ((FunctionHolderExpression) constant).args.get(2);
+            if (val instanceof LongExpression && scaleVal instanceof LongExpression){
+              LongExpression valExpr = (LongExpression) val;
+              LongExpression scaleExpr = (LongExpression) scaleVal;
+              decimalValues.add(BigDecimal.valueOf(valExpr.getLong(), (int) scaleExpr.getLong()));
             }else if (!(val instanceof TypedNullConstant)) {
               throw new UnsupportedOperationException("Supports only int, decimal " +
                 "or null in IN expression" +
