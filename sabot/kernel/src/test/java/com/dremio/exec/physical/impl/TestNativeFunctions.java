@@ -616,25 +616,25 @@ public class TestNativeFunctions extends BaseTestFunction {
     try {
       InExpression.COUNT.set(0);
       testFunctionsCompiledOnly(new Object[][]{
-        {"booleanOr(c0 = cast(1l as DECIMAL(38, 0)), c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
+        {"booleanOr(c0 = cast(1l as DECIMAL(38, 0)), c0 = cast(2l as DECIMAL(38, 0)), " +
+          "c0 = cast(3l as DECIMAL(38, 0)), " +
           "c0 != cast(10l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), " +
-          "c0 = cast(1l as DECIMAL(38, 0)), c0 " +
-          "= cast(1l as DECIMAL(38, 0)), c0 = cast(1l as DECIMAL(38, 0)))", BigDecimal.valueOf(10, 0), false}}
+          "c0 = cast(4l as DECIMAL(38, 0)), " +
+          "c0 = cast(5l as DECIMAL(38, 0)), " +
+          "c0 = cast(6l as DECIMAL(38, 0)), " +
+          "c0 = cast(7l as DECIMAL(38, 0)), " +
+          "c0 = cast(8l as DECIMAL(38, 0)), " +
+          "c0 = cast(9l as DECIMAL(38, 0)), " +
+          "c0 = cast(30.5f as DECIMAL(38, 0)), " +
+          "c0 = cast(11l as DECIMAL(38, 0)), " +
+          "c0 = cast(12l as DECIMAL(38, 0)), " +
+          "c0 = cast(13l as DECIMAL(38, 0)), " +
+          "c0 = cast(14l as DECIMAL(38, 0)), " +
+          "c0 = cast(15l as DECIMAL(38, 0)), " +
+          "c0 = cast(16l as DECIMAL(38, 0)), " +
+          "c0 = cast(17l as DECIMAL(38, 0)), " +
+          "c0 = cast(18l as DECIMAL(38, 0)), c0 " +
+          "= cast(19l as DECIMAL(38, 0)), c0 = cast(20l as DECIMAL(38, 0)))", BigDecimal.valueOf(10, 0), false}}
       );
       Assert.assertEquals(1, InExpression.COUNT.get());
     } finally {

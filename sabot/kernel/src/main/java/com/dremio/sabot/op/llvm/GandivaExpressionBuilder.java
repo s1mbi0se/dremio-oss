@@ -233,16 +233,38 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
         return TreeBuilder.makeInExpressionString(TreeBuilder.makeField(field), stringValues);
       }else if(constantType.isDecimal()){
         Set<BigDecimal> decimalValues = Sets.newHashSet();
+        Integer precision = constantType.getPrecision();
         for (LogicalExpression constant: in.getConstants()){
           if (constant instanceof DecimalExpression){
             decimalValues.add(((DecimalExpression) constant).getDecimal());
           } else if (constant instanceof FunctionHolderExpression){
             LogicalExpression val = ((FunctionHolderExpression) constant).args.get(0);
             LogicalExpression scaleVal = ((FunctionHolderExpression) constant).args.get(2);
-            if (val instanceof LongExpression && scaleVal instanceof LongExpression){
-              LongExpression valExpr = (LongExpression) val;
-              LongExpression scaleExpr = (LongExpression) scaleVal;
-              decimalValues.add(BigDecimal.valueOf(valExpr.getLong(), (int) scaleExpr.getLong()));
+            if (scaleVal instanceof LongExpression){
+              if (val instanceof LongExpression){
+                LongExpression valExpr = (LongExpression) val;
+                LongExpression scaleExpr = (LongExpression) scaleVal;
+
+                decimalValues.add(BigDecimal.valueOf(valExpr.getLong(), (int) scaleExpr.getLong()));
+              }else if (val instanceof IntExpression){
+                IntExpression valExpr = (IntExpression) val;
+                LongExpression scaleExpr = (LongExpression) scaleVal;
+
+                decimalValues.add(BigDecimal.valueOf(valExpr.getInt(), (int) scaleExpr.getLong()));
+              }
+              else if (val instanceof FloatExpression){
+                FloatExpression valExpr = (FloatExpression) val;
+                LongExpression scaleExpr = (LongExpression) scaleVal;
+
+                BigDecimal decimal = BigDecimal.valueOf(valExpr.getFloat()).setScale((int)scaleExpr.getLong(), BigDecimal.ROUND_HALF_DOWN);
+                decimalValues.add(decimal);
+              }else if (val instanceof DoubleExpression){
+                DoubleExpression valExpr = (DoubleExpression) val;
+                LongExpression scaleExpr = (LongExpression) scaleVal;
+
+                BigDecimal decimal = BigDecimal.valueOf(valExpr.getDouble()).setScale((int)scaleExpr.getLong(), BigDecimal.ROUND_HALF_DOWN);
+                decimalValues.add(decimal);
+              }
             }else if (!(val instanceof TypedNullConstant)) {
               throw new UnsupportedOperationException("Supports only int, decimal " +
                 "or null in IN expression" +
@@ -250,7 +272,6 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
             }
           }
         }
-        Integer precision = decimalValues.stream().findFirst().get().precision();
         Integer scale = decimalValues.stream().findFirst().get().scale();
         return TreeBuilder.makeInExpressionDecimal(TreeBuilder.makeField(field), decimalValues, precision, scale);
       }else {
