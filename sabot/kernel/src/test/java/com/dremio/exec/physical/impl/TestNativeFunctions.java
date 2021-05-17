@@ -939,6 +939,22 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testByteSubstring() {
+    testFunctions(new Object[][]{
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 10, "TestString"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 4, "Test"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 5, 5, "Strin"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 5, "Strin"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 6, "String"},
+    });
+  }
+
+  @Test
   public void testConcatOperator() throws Exception {
     testFunctions(new Object[][]{
       { "concatOperator(c0, c1)", "abcd", "ABCD", "abcdABCD"},
