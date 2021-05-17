@@ -951,6 +951,18 @@ public class TestNativeFunctions extends BaseTestFunction {
         "TestString", -6, 5, "Strin"},
       {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
         "TestString", -6, 6, "String"},
+
+      // Execute the same tests, but using the 'byte_substr' alias
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 10, "TestString"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 4, "Test"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 5, 5, "Strin"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 5, "Strin"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 6, "String"}
     });
   }
 
