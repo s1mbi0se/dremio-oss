@@ -928,6 +928,30 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCastMillisToVarchar() throws Exception {
+    testFunctions(new Object[][]{
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 10L, "1970-01-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 30L, "1970-01-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 8L, "1970-01-"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), 10L, "1985-12-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), 0L, ""},
+    });
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCastMillisToVarcharNegativeLength() throws Exception {
+    try {
+      testFunctions(new Object[][]{
+        {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), -10L, ""}
+      });
+    } catch (RuntimeException re) {
+      Assert.assertTrue(re.getCause().getCause().getMessage()
+      .contains("Buffer length can not be negative"));
+      throw re;
+    }
+  }
+
+  @Test
   public void testSplitPart() throws Exception {
     testFunctions(new Object[][]{
       { "split_part(c0, c1, c2)", "abc~@~def~@~ghi", "~@~", 1, "abc"},
