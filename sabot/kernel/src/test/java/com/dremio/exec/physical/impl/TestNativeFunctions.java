@@ -1300,5 +1300,19 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"castINT(c0))", "\\x2D\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x38", Integer.MIN_VALUE},
     });
   }
+   
+  @Test
+  public void testCastBigInt() throws Exception {
+    testFunctions(new Object[][]{
+      {"castBIGINT(c0)", "\\x30", 0l},
+      {"castBIGINT(c0)", "\\x2D\\x30", 0l},
+      {"castBIGINT(c0)", "\\x35", 5l},
+      {"castBIGINT(c0)", "\\x36\\x39", 69l},
+      {"castBIGINT(c0)", "\\x2D\\x30", -5l},
+      {"castBIGINT(c0)", "\\x2D\\x36\\x39", -69l},
+      {"castBIGINT(c0))", "\\x39\\x32\\x32\\x33\\x33\\x37\\x32\\\\x30\\x33\\x36\\x38\\x35\\x34\\x37\\x37\\x35\\x38\\x30\\x37", Long.MAX_VALUE},
+      {"castBIGINT(c0))", "\\x2D\\x39\\x32\\x32\\x33\\x33\\x37\\x32\\\\x30\\x33\\x36\\x38\\x35\\x34\\x37\\x37\\x35\\x38\\x30\\x38", Long.MIN_VALUE},
+    });
+  }
 
 }
