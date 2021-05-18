@@ -1276,4 +1276,14 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"lower(c0)", null, null},
     });
   }
+
+  @Test
+  public void testInitCap() throws Exception {
+    testFunctions(new Object[][]{
+      {"initcap(c0)", "all", "All"},
+      {"initcap(c0)", "low up", "Low Up"},
+      {"initcap(c0)", "alL musT be capitilizeD", "AlL MusT Be CapitlizeD"},
+      {"initcap(c0)", null, null},
+    });
+  }
 }
