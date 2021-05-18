@@ -1256,4 +1256,14 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"like(c0, 'ArM_')", "armies", false},
     });
   }
+
+  @Test
+  public void testUpper() throws Exception {
+    testFunctions(new Object[][]{
+      {"upper(c0)", "all", "ALL"},
+      {"upper(c0)", "lowUP", "LOWUP"},
+      {"upper(c0)", "alMoST aLl LoWer", "ALMOST ALL LOWER"},
+      {"upper(c0)", null, null},
+    });
+  }
 }
