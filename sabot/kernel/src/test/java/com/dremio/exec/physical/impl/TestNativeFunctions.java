@@ -939,6 +939,19 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testConvertTo() throws Exception {
+    testFunctions(new Object[][]{
+      {"convert_to(77, 'INT')", new byte[]{77, 0, 0, 0}},
+      {"convert_to(77, 'INT_BE')", new byte[]{0, 0, 0, 77}},
+      {"convert_to(-77, 'BIGINT')", new byte[]{-77, -1, -1, -1, -1, -1, -1, -1}},
+      {"convert_to(-77, 'BIGINT_BE')", new byte[]{-1, -1, -1, -1, -1, -1, -1, -77}},
+      {"convert_to(true, 'BOOLEAN_BYTE')", new byte[]{1}},
+      {"convert_to(false, 'BOOLEAN_BYTE')", new byte[]{0}},
+      {"convert_from(convert_to(c0, 'UTF8'), 'UTF8')", "TestString", "TestString"},
+    });
+  }
+
+  @Test
   public void testByteSubstring() {
     testFunctions(new Object[][]{
       {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
