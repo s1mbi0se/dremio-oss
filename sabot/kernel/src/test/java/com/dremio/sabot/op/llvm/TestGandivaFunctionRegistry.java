@@ -113,60 +113,9 @@ public class TestGandivaFunctionRegistry extends ExecTest {
 
   @Test
   public void getAllRegisteredFunctionsAndGenerateYAML() throws IOException {
-    Map<String, Map<String, Object>> functionsToSave = new HashMap<>();
-
     // Retrieve the function registry (FOR TEST PURPOSE)
     FunctionImplementationRegistry fnRegistry = FUNCTIONS();
-    ArrayListMultimap<String, AbstractFunctionHolder> functions = fnRegistry.getRegisteredFunctions();
-
-    // ObjectMapper is instantiated to map the YAML file
-    ObjectMapper om = new ObjectMapper(new YAMLFactory());
-
-    Map<String, Object> stringObjectMap;
-    // Iterate over each registered function to extract the available information
-    for (Map.Entry<String, AbstractFunctionHolder> holders : functions.entries()) {
-      String functionName = holders.getKey().toLowerCase();
-      BaseFunctionHolder value = (BaseFunctionHolder) holders.getValue();
-
-      stringObjectMap = functionsToSave.get(functionName);
-      if (stringObjectMap == null) {
-        stringObjectMap = new HashMap<>();
-      }
-      List<Map<String, Object>> signaturesList = (List<Map<String, Object>>) stringObjectMap.get("signatures");
-      if (signaturesList == null) {
-        signaturesList = new ArrayList<>();
-      }
-
-      // Define signatures values
-      Map<String, Object> signaturesValues = new HashMap<>();
-      List<Map<String, Object>> parametersList = new ArrayList<>();
-      int count = 1;
-      for (BaseFunctionHolder.ValueReference parameter : value.getParameters()) {
-        int finalCount = count;
-        parametersList.add(
-          new HashMap<String, Object>() {
-            {
-              put("ordinalPosition", finalCount);
-              put("parameterName", parameter.getName());
-              put("parameterType", parameter.getType().toString());
-              try {
-                put("parameterFormat", (parameter.getType().toMinorType()));
-              } catch (Exception exception) {}
-            }
-          }
-        );
-        count++;
-      }
-      signaturesValues.put("parameterList", parametersList);
-      signaturesValues.put("returnType", value.getReturnValue().getType().toString());
-      signaturesList.add(signaturesValues);
-      stringObjectMap.put("signatures", signaturesList);
-
-      // TODO: use the correct path according to review
-      functionsToSave.put(functionName, stringObjectMap);
-//      break;
-    }
-    om.writeValue(new File("/home/jpedroantunes/dremio/functions.yaml"), functionsToSave);
+    fnRegistry.generateYAMLWithRegisteredFunctions();
   }
 
   @Test

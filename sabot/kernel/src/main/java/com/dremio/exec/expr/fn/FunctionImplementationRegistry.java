@@ -15,12 +15,15 @@
  */
 package com.dremio.exec.expr.fn;
 
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import org.apache.arrow.vector.types.pojo.ArrowType;
 
 import com.dremio.common.config.SabotConfig;
@@ -219,5 +222,59 @@ public class FunctionImplementationRegistry implements FunctionLookupContext {
 
   public boolean isDecimalV2Enabled() {
     return isDecimalV2Enabled;
+  }
+
+  public void generateYAMLWithRegisteredFunctions() throws IOException {
+    // Retrieve the registered functions on the function registry
+    ArrayListMultimap<String, AbstractFunctionHolder> functions = this.getRegisteredFunctions();
+
+    // ObjectMapper is instantiated to map the YAML file
+    ObjectMapper om = new ObjectMapper(new YAMLFactory());
+
+    Map<String, Map<String, Object>> functionsToSave = new HashMap<>();
+    Map<String, Object> stringObjectMap;
+    // Iterate over each registered function to extract the available information
+    for (Map.Entry<String, AbstractFunctionHolder> holders : functions.entries()) {
+      String functionName = holders.getKey().toLowerCase();
+      BaseFunctionHolder value = (BaseFunctionHolder) holders.getValue();
+
+      stringObjectMap = functionsToSave.get(functionName);
+      if (stringObjectMap == null) {
+        stringObjectMap = new HashMap<>();
+      }
+      List<Map<String, Object>> signaturesList = (List<Map<String, Object>>) stringObjectMap.get("signatures");
+      if (signaturesList == null) {
+        signaturesList = new ArrayList<>();
+      }
+
+      // Define signatures values
+      Map<String, Object> signaturesValues = new HashMap<>();
+      List<Map<String, Object>> parametersList = new ArrayList<>();
+      int count = 1;
+      for (BaseFunctionHolder.ValueReference parameter : value.getParameters()) {
+        int finalCount = count;
+        parametersList.add(
+          new HashMap<String, Object>() {
+            {
+              put("ordinalPosition", finalCount);
+              put("parameterName", parameter.getName());
+              put("parameterType", parameter.getType().toString());
+              try {
+                put("parameterFormat", (parameter.getType().toMinorType()));
+              } catch (Exception exception) {}
+            }
+          }
+        );
+        count++;
+      }
+      signaturesValues.put("parameterList", parametersList);
+      signaturesValues.put("returnType", value.getReturnValue().getType().toString());
+      signaturesList.add(signaturesValues);
+      stringObjectMap.put("signatures", signaturesList);
+
+      functionsToSave.put(functionName, stringObjectMap);
+    }
+    om.writeValue(new File(System.getProperty("user.dir") + "/target/registered_functions.yaml"),
+      functionsToSave);
   }
 }
