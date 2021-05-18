@@ -939,6 +939,52 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCastINTFromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castINT(binary_string(c0))", 12, "12"},
+      {"castINT(binary_string(c0))", -12, "-12"},
+      {"castINT(binary_string(c0))", Integer.MAX_VALUE, String.valueOf(Integer.MAX_VALUE)},
+      {"castINT(binary_string(c0))", Integer.MIN_VALUE, String.valueOf(Integer.MIN_VALUE)},
+      {"castINT(binary_string(c0))", 0, "-0"},
+    });
+  }
+
+  @Test
+  public void testCastBIGINTFromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castBIGINT(binary_string(c0))", 12, "12"},
+      {"castINT(binary_string(c0))", -12, "-12"},
+      {"castBIGINT(binary_string(c0))", Long.MAX_VALUE, String.valueOf(Long.MAX_VALUE)},
+      {"castBIGINT(binary_string(c0))", Long.MIN_VALUE, String.valueOf(Long.MIN_VALUE)},
+      {"castBIGINT(binary_string(c0))", 0, "-0"},
+    });
+  }
+
+  @Test
+  public void testCastFloat4FromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT4(binary_string(c0))", 12.6f, "12.6"},
+      {"castFLOAT4(binary_string(c0))", -12.6f, "-12.6"},
+      {"castFLOAT4(binary_string(c0))", Float.MAX_VALUE, String.valueOf(Float.MAX_VALUE)},
+      {"castFLOAT4(binary_string(c0))", Float.MIN_VALUE, String.valueOf(Float.MIN_VALUE)},
+      {"castFLOAT4(binary_string(c0))", 0, "-0"},
+      {"castFLOAT4(binary_string(c0))", 0, "-0.0"},
+    });
+  }
+
+  @Test
+  public void testCastFloat8FromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT8(binary_string(c0))", 12.6, "12.6"},
+      {"castFLOAT8(binary_string(c0))", -12.6, "-12.6"},
+      {"castFLOAT8(binary_string(c0))", Double.MAX_VALUE, String.valueOf(Double.MAX_VALUE)},
+      {"castFLOAT8(binary_string(c0))", Double.MIN_VALUE, String.valueOf(Double.MIN_VALUE)},
+      {"castFLOAT8(binary_string(c0))", 0, "-0"},
+      {"castFLOAT8(binary_string(c0))", 0, "-0.0"},
+    });
+  }
+
+  @Test
   public void testConvertTo() throws Exception {
     testFunctions(new Object[][]{
       {"convert_to(77, 'INT')", new byte[]{77, 0, 0, 0}},
