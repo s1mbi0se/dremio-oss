@@ -1206,6 +1206,19 @@ public class TestNativeFunctions extends BaseTestFunction {
     });
   }
 
+  @Test
+
+  public void testToHex() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_hex(binary_string(c0))", "\\x83", "83"},
+      {"to_hex(binary_string(c0))", "\\x65\\x73", "6573"},
+      {"to_hex(binary_string(c0))", "\\xAB\\xEF\\xCD\\xAE\\xFB", "ABEFCDAEFB"},
+      {"to_hex(binary_string(c0))", "\\x54\\x65\\x73\\x74\\x53\\x74\\x72\\x69\\x6E\\x67", "54657374537472696E67"},
+      {"to_hex(binary_string(c0))", "\\x00", "00"},
+      {"to_hex(binary_string(c0))", null, null},
+    });
+  }
+
   @Test(expected = RuntimeException.class)
   public void testDisableGandivaFunctions() throws Exception {
     try(AutoCloseable o = with(ExecConstants.DISABLED_GANDIVA_FUNCTIONS, "add;subtract")) {
