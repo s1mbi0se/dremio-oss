@@ -67,7 +67,7 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
   private final int minConversionSize;
   private final int minConversionSizeForVarchars;
   private static final List<CompleteType> supportedInTypesInGandiva = Lists.newArrayList(CompleteType.BIGINT, CompleteType.INT,
-    CompleteType.VARCHAR);
+    CompleteType.VARCHAR, CompleteType.FLOAT, CompleteType.DOUBLE);
   private static final List<Class<? extends LogicalExpression>> supportedExpressionTypes = Lists
     .newArrayList(ValueVectorReadExpression.class);
 
@@ -238,7 +238,7 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
               FloatExpression expr = (FloatExpression) val;
               floatValues.add(expr.getFloat());
             }else if (!(val instanceof TypedNullConstant)) {
-              throw new UnsupportedOperationException("Supports only int, decimal, float," +
+              throw new UnsupportedOperationException("Supports only int, float," +
                 " double or null in IN expression" +
                 ".");
             }
@@ -256,7 +256,7 @@ public class GandivaExpressionBuilder extends AbstractExprVisitor<TreeNode, Void
               DoubleExpression expr = (DoubleExpression) val;
               doubleValues.add(expr.getDouble());
             }else if (!(val instanceof TypedNullConstant)) {
-              throw new UnsupportedOperationException("Supports only int, decimal, float," +
+              throw new UnsupportedOperationException("Supports only int, float," +
                 " double or null in IN expression" +
                 ".");
             }
