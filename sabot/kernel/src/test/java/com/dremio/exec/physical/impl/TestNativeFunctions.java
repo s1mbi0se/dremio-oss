@@ -1286,4 +1286,19 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"initcap(c0)", null, null},
     });
   }
+
+  @Test
+  public void testCastInt() throws Exception {
+    testFunctions(new Object[][]{
+      {"castINT(c0)", "\\x30", 0},
+      {"castINT(c0)", "\\x2D\\x30", 0},
+      {"castINT(c0)", "\\x35", 5},
+      {"castINT(c0)", "\\x36\\x39", 69},
+      {"castINT(c0)", "\\x2D\\x30", -5},
+      {"castINT(c0)", "\\x2D\\x36\\x39", -69},
+      {"castINT(c0))", "\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x37", Integer.MAX_VALUE},
+      {"castINT(c0))", "\\x2D\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x38", Integer.MIN_VALUE},
+    });
+  }
+
 }
