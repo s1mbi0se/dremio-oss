@@ -891,6 +891,19 @@ public class TestNativeFunctions extends BaseTestFunction {
     });
   }
 
+  @Test(expected = RuntimeException.class)
+  public void testCastBinaryToVarcharNegativeLength() throws Exception {
+    try {
+      testFunctions(new Object[][]{
+        {"castVARCHAR(binary_string(c0), c1)", "TestString", -10L, "TestString"},
+      });
+    } catch (RuntimeException re) {
+      Assert.assertTrue(re.getCause().getCause().getMessage()
+        .contains("Output buffer length can't be negative"));
+      throw re;
+    }
+  }
+
   @Test
   public void testCastBoolToVarchar() throws Exception {
     testFunctions(new Object[][]{
