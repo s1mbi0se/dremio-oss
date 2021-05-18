@@ -1241,9 +1241,8 @@ public class TestNativeFunctions extends BaseTestFunction {
       });
     }
   }
-}
 
-@Test
+  @Test
   public void testIlike() throws Exception {
 
     testFunctions(new Object[][]{
@@ -1257,3 +1256,4 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"like(c0, 'ArM_')", "armies", false},
     });
   }
+}
