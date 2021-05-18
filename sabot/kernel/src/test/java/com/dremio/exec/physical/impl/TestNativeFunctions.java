@@ -878,6 +878,20 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCastBinaryToVarchar() throws Exception {
+    testFunctions(new Object[][]{
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 10L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 20L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 4L, "Test"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 0L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 3L, "ABC"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 6L, "ABC"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 2L, "AB"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 0L, "ABC"},
+    });
+  }
+
+  @Test
   public void testCastBoolToVarchar() throws Exception {
     testFunctions(new Object[][]{
       {"castVARCHAR(c0, c1)", true, 2, "tr"},
