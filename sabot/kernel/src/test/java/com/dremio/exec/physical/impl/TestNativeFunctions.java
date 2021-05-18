@@ -1242,3 +1242,18 @@ public class TestNativeFunctions extends BaseTestFunction {
     }
   }
 }
+
+@Test
+  public void testIlike() throws Exception {
+
+    testFunctions(new Object[][]{
+      {"ilike(c0, '%SuPer%')", "superb", true},
+      {"ilike(c0, '%SuPer%')", "awesome superb", true},
+      {"ilike(c0, '%SuPer%')", "suppr", false},
+      {"ilike(c0, '%SuPer%')", NULL_VARCHAR, NULL_BOOLEAN},
+
+      {"ilike(c0, 'ArM_')", "arm", false},
+      {"like(c0, 'ArM_')", "army", true},
+      {"like(c0, 'ArM_')", "armies", false},
+    });
+  }
