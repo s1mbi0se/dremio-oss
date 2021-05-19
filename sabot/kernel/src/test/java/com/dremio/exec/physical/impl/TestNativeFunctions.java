@@ -618,7 +618,7 @@ public class TestNativeFunctions extends BaseTestFunction {
       testFunctions(new Object[][]{
         {"booleanOr(c0 = 1f, c0 = 2f, c0 = 3f, c0 != 10.5f, c0 = 4f, c0 = 5f, c0 = 6f, c0 = 7f, c0 " +
           "= 8f, c0 = 9f, c0 = 10f, c0 = 11f, c0 = 12f, c0 = 13f, c0 = 14f, c0 = 15f, c0 = 16f, c0 = 17f, c0 = 18f, " +
-          "c0 = 19f)", 10.5, false}}
+          "c0 = 19f, c0 = 20f)", 10.5f, false}}
       );
       Assert.assertEquals(1, InExpression.COUNT.get());
     } finally {
@@ -633,7 +633,7 @@ public class TestNativeFunctions extends BaseTestFunction {
       testFunctions(new Object[][]{
         {"booleanOr(c0 = 1d, c0 = 2d, c0 = 3d, c0 != 10.5d, c0 = 4d, c0 = 5d, c0 = 6d, c0 = 7d, c0 " +
           "= 8d, c0 = 9d, c0 = 10d, c0 = 11d, c0 = 12d, c0 = 13d, c0 = 14d, c0 = 15d, c0 = 16d, c0 = 17d, c0 = 18d," +
-          "c0 = 19d)", 10.5, false}}
+          "c0 = 19d, c0 = 20d)", 10.5, false}}
       );
       Assert.assertEquals(1, InExpression.COUNT.get());
     } finally {
