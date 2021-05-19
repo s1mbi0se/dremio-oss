@@ -301,6 +301,16 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testToTimeStamp() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_timestamp(c0)", 0, ts("1970-01-01T00:00:00")},
+      {"to_timestamp(c0)", 3600.4, ts("1970-01-01T01:00:01").plusMillis(400)},
+      {"to_timestamp(c0)", 3600.6, ts("1970-01-01T01:00:01").plusMillis(600)},
+      {"to_timestamp(c0)", -1, ts("1969-12-31T023:59:59")},
+    });
+  }
+
+  @Test
   public void testFromDate() throws Exception {
     testFunctions(new Object[][]{
       {"extractDay(c0)", date("1970-01-02"), 2l},
@@ -308,6 +318,16 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"extractYear(c0)", date("1970-01-02"), 1970l},
     });
 
+  }
+
+  @Test
+  public void testToTime() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_time(c0)", 0, ts("1970-01-01T00:00:00").millisOfDay()},
+      {"to_time(c0)", 86400.4, ts("1970-01-02T00:00:01").plusMillis(400).millisOfDay()},
+      {"to_time(c0)", 86400.6, ts("1970-01-02T00:00:01").plusMillis(600).millisOfDay()},
+      {"to_time(c0)", -1, ts("1969-12-31T023:59:59").millisOfDay()},
+    });
   }
 
   @Test
