@@ -241,6 +241,11 @@ public class FunctionImplementationRegistry implements FunctionLookupContext {
       stringObjectMap = functionsToSave.get(functionName);
       if (stringObjectMap == null) {
         stringObjectMap = new HashMap<>();
+        stringObjectMap.put("functionName", functionName.toUpperCase());
+        stringObjectMap.put("dremioVersions", null);
+        stringObjectMap.put("description", null);
+        stringObjectMap.put("extendedDescription", null);
+        stringObjectMap.put("useCaseExamples", null);
       }
       List<Map<String, Object>> signaturesList = (List<Map<String, Object>>) stringObjectMap.get("signatures");
       if (signaturesList == null) {
