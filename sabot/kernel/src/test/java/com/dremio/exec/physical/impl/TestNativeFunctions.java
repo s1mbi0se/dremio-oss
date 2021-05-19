@@ -301,6 +301,17 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testToTimeStamp() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_timestamp(c0)", 0, ts("1970-01-01T00:00:00")},
+      {"to_timestamp(c0)", 3600.4, ts("1970-01-01T01:00:00").plusMillis(400)},
+      {"to_timestamp(c0)", 3600.64, ts("1970-01-01T01:00:00").plusMillis(640)},
+      {"to_timestamp(c0)", 3600.633, ts("1970-01-01T01:00:00").plusMillis(633)},
+      {"to_timestamp(c0)", -3600, ts("1969-12-31T23:00:00")},
+    });
+  }
+
+  @Test
   public void testFromDate() throws Exception {
     testFunctions(new Object[][]{
       {"extractDay(c0)", date("1970-01-02"), 2l},
@@ -308,6 +319,15 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"extractYear(c0)", date("1970-01-02"), 1970l},
     });
 
+  }
+
+  @Test
+  public void testToTime() throws Exception {
+    testFunctions(new Object[][]{
+      {"extractMinute(to_time(c0))", -1.0, 59L},
+      {"extractSecond(to_time(c0))", -1.0, 59L},
+      {"extractHour(to_time(c0))", -1.0, 23L},
+    });
   }
 
   @Test
@@ -878,6 +898,33 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCastBinaryToVarchar() throws Exception {
+    testFunctions(new Object[][]{
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 10L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 20L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 4L, "Test"},
+      {"castVARCHAR(binary_string(c0), c1)", "TestString", 0L, "TestString"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 3L, "ABC"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 6L, "ABC"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 2L, "AB"},
+      {"castVARCHAR(binary_string(c0), c1)", "\\x41\\x42\\x43", 0L, "ABC"},
+    });
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCastBinaryToVarcharNegativeLength() throws Exception {
+    try {
+      testFunctions(new Object[][]{
+        {"castVARCHAR(binary_string(c0), c1)", "TestString", -10L, "TestString"},
+      });
+    } catch (RuntimeException re) {
+      Assert.assertTrue(re.getCause().getCause().getMessage()
+        .contains("Output buffer length can't be negative"));
+      throw re;
+    }
+  }
+
+  @Test
   public void testCastBoolToVarchar() throws Exception {
     testFunctions(new Object[][]{
       {"castVARCHAR(c0, c1)", true, 2, "tr"},
@@ -896,6 +943,30 @@ public class TestNativeFunctions extends BaseTestFunction {
     } catch (RuntimeException re) {
       Assert.assertTrue(re.getCause().getCause().getMessage()
       .contains("Output buffer length can't be negative"));
+      throw re;
+    }
+  }
+
+  @Test
+  public void testCastMillisToVarchar() throws Exception {
+    testFunctions(new Object[][]{
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 10L, "1970-01-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 30L, "1970-01-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1970-01-12T10:20:33"), 8L, "1970-01-"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), 10L, "1985-12-12"},
+      {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), 0L, ""},
+    });
+  }
+
+  @Test(expected = RuntimeException.class)
+  public void testCastMillisToVarcharNegativeLength() throws Exception {
+    try {
+      testFunctions(new Object[][]{
+        {"castVARCHAR(cast(c0 as DATE), c1)", ts("1985-12-12T10:20:33"), -10L, ""}
+      });
+    } catch (RuntimeException re) {
+      Assert.assertTrue(re.getCause().getCause().getMessage()
+      .contains("Buffer length can not be negative"));
       throw re;
     }
   }
@@ -935,6 +1006,93 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"convert_from(binary_string(c0), 'UTF8')", "TestString", "TestString"},
       {"convert_from(binary_string(c0), 'UTF8')", "T", "T"},
       {"convert_from(binary_string(c0), 'UTF8')", "\\x4f\\x4D", "OM"},
+    });
+  }
+
+  @Test
+  public void testCastINTFromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castINT(binary_string(c0))", "12", 12},
+      {"castINT(binary_string(c0))", "-12", -12},
+      {"castINT(binary_string(c0))", String.valueOf(Integer.MAX_VALUE), Integer.MAX_VALUE},
+      {"castINT(binary_string(c0))", String.valueOf(Integer.MIN_VALUE), Integer.MIN_VALUE},
+      {"castINT(binary_string(c0))", "-0", 0},
+    });
+  }
+
+  @Test
+  public void testCastBIGINTFromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castBIGINT(binary_string(c0))", "12",  12L},
+      {"castBIGINT(binary_string(c0))", "-12", -12L},
+      {"castBIGINT(binary_string(c0))", String.valueOf(Long.MAX_VALUE), Long.MAX_VALUE},
+      {"castBIGINT(binary_string(c0))", String.valueOf(Long.MIN_VALUE), Long.MIN_VALUE},
+      {"castBIGINT(binary_string(c0))","-0", 0L},
+    });
+  }
+
+  @Test
+  public void testCastFloat4FromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT4(binary_string(c0))", "12.6", 12.6f},
+      {"castFLOAT4(binary_string(c0))", "-12.6", -12.6f},
+      {"castFLOAT4(binary_string(c0))", String.valueOf(Float.MAX_VALUE), Float.MAX_VALUE},
+      {"castFLOAT4(binary_string(c0))", String.valueOf(Float.MIN_VALUE), Float.MIN_VALUE},
+      {"castFLOAT4(binary_string(c0))", "-0", 0.0f},
+      {"castFLOAT4(binary_string(c0))", "-0.0", 0.0f},
+    });
+  }
+
+  @Test
+  public void testCastFloat8FromBinary() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT8(binary_string(c0))", "12.6", 12.6},
+      {"castFLOAT8(binary_string(c0))", "-12.6", -12.6},
+      {"castFLOAT8(binary_string(c0))", String.valueOf(Double.MAX_VALUE), Double.MAX_VALUE},
+      {"castFLOAT8(binary_string(c0))", String.valueOf(Double.MIN_VALUE), Double.MIN_VALUE},
+      {"castFLOAT8(binary_string(c0))", "-0", 0.0},
+      {"castFLOAT8(binary_string(c0))", "-0.0", 0.0},
+    });
+  }
+
+  @Test
+  public void testConvertTo() throws Exception {
+    testFunctions(new Object[][]{
+      {"convert_to(77, 'INT')", new byte[]{77, 0, 0, 0}},
+      {"convert_to(77, 'INT_BE')", new byte[]{0, 0, 0, 77}},
+      {"convert_to(-77, 'BIGINT')", new byte[]{-77, -1, -1, -1, -1, -1, -1, -1}},
+      {"convert_to(-77, 'BIGINT_BE')", new byte[]{-1, -1, -1, -1, -1, -1, -1, -77}},
+      {"convert_to(true, 'BOOLEAN_BYTE')", new byte[]{1}},
+      {"convert_to(false, 'BOOLEAN_BYTE')", new byte[]{0}},
+      {"convert_from(convert_to(c0, 'UTF8'), 'UTF8')", "TestString", "TestString"},
+    });
+  }
+
+  @Test
+  public void testByteSubstring() {
+    testFunctions(new Object[][]{
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 10, "TestString"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 4, "Test"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 5, 5, "Strin"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 5, "Strin"},
+      {"convert_from(bytesubstring(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 6, "String"},
+
+      // Execute the same tests, but using the 'byte_substr' alias
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 10, "TestString"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 1, 4, "Test"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", 5, 5, "Strin"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 5, "Strin"},
+      {"convert_from(byte_substr(binary_string(c0), c1, c2), 'UTF8')",
+        "TestString", -6, 6, "String"}
     });
   }
 
@@ -1108,6 +1266,29 @@ public class TestNativeFunctions extends BaseTestFunction {
     });
   }
 
+  @Test
+  public void testToHex() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_hex(binary_string(c0))", "\\x83", "83"},
+      {"to_hex(binary_string(c0))", "\\x65\\x73", "6573"},
+      {"to_hex(binary_string(c0))", "\\xAB\\xEF\\xCD\\xAE\\xFB", "ABEFCDAEFB"},
+      {"to_hex(binary_string(c0))", "\\x54\\x65\\x73\\x74\\x53\\x74\\x72\\x69\\x6E\\x67", "54657374537472696E67"},
+      {"to_hex(binary_string(c0))", "\\x00", "00"},
+      {"to_hex(c0)", NULL_BINARY, NULL_VARCHAR},
+    });
+  }
+
+  @Test
+  public void testFromHex() throws Exception {
+    testFunctions(new Object[][]{
+      {"to_hex(from_hex(c0))", "83", "83"},
+      {"to_hex(from_hex(c0))", "ABCD", "ABCD"},
+      {"to_hex(from_hex(c0))", "ABEFCDAEFB", "ABEFCDAEFB"},
+      {"to_hex(from_hex(c0))", "54657374537472696E67", "54657374537472696E67"},
+      {"to_hex(from_hex(c0))", "00", "00"}
+    });
+  }
+
   @Test(expected = RuntimeException.class)
   public void testDisableGandivaFunctions() throws Exception {
     try(AutoCloseable o = with(ExecConstants.DISABLED_GANDIVA_FUNCTIONS, "add;subtract")) {
@@ -1116,4 +1297,101 @@ public class TestNativeFunctions extends BaseTestFunction {
       });
     }
   }
+
+  @Test
+  public void testIlike() throws Exception {
+
+    testFunctions(new Object[][]{
+      {"ilike(c0, '%SuPer%')", "superb", true},
+      {"ilike(c0, '%SuPer%')", "awesome superb", true},
+      {"ilike(c0, '%SuPer%')", "suppr", false},
+      {"ilike(c0, '%SuPer%')", NULL_VARCHAR, NULL_BOOLEAN},
+
+      {"ilike(c0, 'ArM%')", "carm", false},
+      {"ilike(c0, 'ArM%')", "army", true},
+      {"ilike(c0, '%ArM')", "break arm", true},
+      {"ilike(c0, '%ArM')", "new army", false},
+    });
+  }
+
+  @Test
+  public void testUpper() throws Exception {
+    testFunctions(new Object[][]{
+      {"upper(c0)", "all", "ALL"},
+      {"upper(c0)", "lowUP", "LOWUP"},
+      {"upper(c0)", "alMoST aLl LoWer", "ALMOST ALL LOWER"},
+      {"upper(c0)", NULL_VARCHAR, NULL_VARCHAR},
+    });
+  }
+
+  @Test
+  public void testLower() throws Exception {
+    testFunctions(new Object[][]{
+      {"lower(c0)", "ALL", "all"},
+      {"lower(c0)", "lowUP", "lowup"},
+      {"lower(c0)", "alMoST aLl LoWer", "almost all lower"},
+      {"lower(c0)", NULL_VARCHAR, NULL_VARCHAR},
+    });
+  }
+
+  @Test
+  public void testInitCap() throws Exception {
+    testFunctions(new Object[][]{
+      {"initcap(c0)", "all", "All"},
+      {"initcap(c0)", "low up", "Low Up"},
+      {"initcap(c0)", "all Must be Capitlized", "All Must Be Capitlized"},
+      {"initcap(c0)", NULL_VARCHAR, NULL_VARCHAR},
+    });
+  }
+
+  @Test
+  public void testCastInt() throws Exception {
+    testFunctions(new Object[][]{
+      {"castINT(c0)", "\\x30", 0},
+      {"castINT(c0)", "\\x2D\\x30", 0},
+      {"castINT(c0)", "\\x35", 5},
+      {"castINT(c0)", "\\x36\\x39", 69},
+      {"castINT(c0)", "\\x2D\\x30", -5},
+      {"castINT(c0)", "\\x2D\\x36\\x39", -69},
+      {"castINT(c0))", "\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x37", Integer.MAX_VALUE},
+      {"castINT(c0))", "\\x2D\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x38", Integer.MIN_VALUE},
+    });
+  }
+
+  @Test
+  public void testCastBigInt() throws Exception {
+    testFunctions(new Object[][]{
+      {"castBIGINT(c0)", "\\x30", 0l},
+      {"castBIGINT(c0)", "\\x2D\\x30", 0l},
+      {"castBIGINT(c0)", "\\x35", 5l},
+      {"castBIGINT(c0)", "\\x36\\x39", 69l},
+      {"castBIGINT(c0)", "\\x2D\\x30", -5l},
+      {"castBIGINT(c0)", "\\x2D\\x36\\x39", -69l},
+      {"castBIGINT(c0))", "\\x39\\x32\\x32\\x33\\x33\\x37\\x32\\\\x30\\x33\\x36\\x38\\x35\\x34\\x37\\x37\\x35\\x38\\x30\\x37", Long.MAX_VALUE},
+      {"castBIGINT(c0))", "\\x2D\\x39\\x32\\x32\\x33\\x33\\x37\\x32\\\\x30\\x33\\x36\\x38\\x35\\x34\\x37\\x37\\x35\\x38\\x30\\x38", Long.MIN_VALUE},
+    });
+  }
+
+  @Test
+  public void testCastFloat() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT4(c0)", "\\x30", 0.0f},
+      {"castFLOAT4(c0)", "\\x2D\\x30\\x2E\\x30", 0.0f},
+      {"castFLOAT4(c0)", "\\x35\\x2E\\x36", 5.6f},
+      {"castFLOAT4(c0)", "\\x36\\x39\\x2E\\x35", 69.5f},
+      {"castFLOAT4(c0)", "\\x2D\\x36\\x39\\x2E\\x35", -69.5f},
+    });
+  }
+
+  @Test
+  public void testCastDouble() throws Exception {
+    testFunctions(new Object[][]{
+      {"castFLOAT8(c0)", "\\x30", 0.0},
+      {"castFLOAT8(c0)", "\\x2D\\x30\\x2E\\x30", 0.0},
+      {"castFLOAT8(c0)", "\\x35\\x2E\\x36", 5.6},
+      {"castFLOAT8(c0)", "\\x36\\x39\\x2E\\x35", 69.5},
+      {"castFLOAT8(c0)", "\\x2D\\x36\\x39\\x2E\\x35", -69.5},
+    });
+  }
+
 }
