@@ -304,9 +304,10 @@ public class TestNativeFunctions extends BaseTestFunction {
   public void testToTimeStamp() throws Exception {
     testFunctions(new Object[][]{
       {"to_timestamp(c0)", 0, ts("1970-01-01T00:00:00")},
-      {"to_timestamp(c0)", 3600.4, ts("1970-01-01T01:00:01").plusMillis(400)},
-      {"to_timestamp(c0)", 3600.6, ts("1970-01-01T01:00:01").plusMillis(600)},
-      {"to_timestamp(c0)", -1, ts("1969-12-31T023:59:59")},
+      {"to_timestamp(c0)", 3600.4, ts("1970-01-01T01:00:00").plusMillis(400)},
+      {"to_timestamp(c0)", 3600.64, ts("1970-01-01T01:00:00").plusMillis(640)},
+      {"to_timestamp(c0)", 3600.633, ts("1970-01-01T01:00:00").plusMillis(633)},
+      {"to_timestamp(c0)", -3600, ts("1969-12-31T23:00:00")},
     });
   }
 
@@ -323,10 +324,9 @@ public class TestNativeFunctions extends BaseTestFunction {
   @Test
   public void testToTime() throws Exception {
     testFunctions(new Object[][]{
-      {"to_time(c0)", 0, ts("1970-01-01T00:00:00").millisOfDay()},
-      {"to_time(c0)", 86400.4, ts("1970-01-02T00:00:01").plusMillis(400).millisOfDay()},
-      {"to_time(c0)", 86400.6, ts("1970-01-02T00:00:01").plusMillis(600).millisOfDay()},
-      {"to_time(c0)", -1, ts("1969-12-31T023:59:59").millisOfDay()},
+      {"extractMinute(to_time(c0))", -1.0, 59L},
+      {"extractSecond(to_time(c0))", -1.0, 59L},
+      {"extractHour(to_time(c0))", -1.0, 23L},
     });
   }
 
@@ -1023,11 +1023,11 @@ public class TestNativeFunctions extends BaseTestFunction {
   @Test
   public void testCastBIGINTFromBinary() throws Exception {
     testFunctions(new Object[][]{
-      {"castBIGINT(binary_string(c0))", "12",  12},
-      {"castINT(binary_string(c0))", "-12", -12},
+      {"castBIGINT(binary_string(c0))", "12",  12L},
+      {"castBIGINT(binary_string(c0))", "-12", -12L},
       {"castBIGINT(binary_string(c0))", String.valueOf(Long.MAX_VALUE), Long.MAX_VALUE},
       {"castBIGINT(binary_string(c0))", String.valueOf(Long.MIN_VALUE), Long.MIN_VALUE},
-      {"castBIGINT(binary_string(c0))","-0", 0},
+      {"castBIGINT(binary_string(c0))","-0", 0L},
     });
   }
 
@@ -1038,8 +1038,8 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"castFLOAT4(binary_string(c0))", "-12.6", -12.6f},
       {"castFLOAT4(binary_string(c0))", String.valueOf(Float.MAX_VALUE), Float.MAX_VALUE},
       {"castFLOAT4(binary_string(c0))", String.valueOf(Float.MIN_VALUE), Float.MIN_VALUE},
-      {"castFLOAT4(binary_string(c0))", "-0", 0},
-      {"castFLOAT4(binary_string(c0))", "-0.0", 0},
+      {"castFLOAT4(binary_string(c0))", "-0", 0.0f},
+      {"castFLOAT4(binary_string(c0))", "-0.0", 0.0f},
     });
   }
 
@@ -1050,8 +1050,8 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"castFLOAT8(binary_string(c0))", "-12.6", -12.6},
       {"castFLOAT8(binary_string(c0))", String.valueOf(Double.MAX_VALUE), Double.MAX_VALUE},
       {"castFLOAT8(binary_string(c0))", String.valueOf(Double.MIN_VALUE), Double.MIN_VALUE},
-      {"castFLOAT8(binary_string(c0))", "-0", 0},
-      {"castFLOAT8(binary_string(c0))", "-0.0", 0},
+      {"castFLOAT8(binary_string(c0))", "-0", 0.0},
+      {"castFLOAT8(binary_string(c0))", "-0.0", 0.0},
     });
   }
 
@@ -1274,19 +1274,18 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"to_hex(binary_string(c0))", "\\xAB\\xEF\\xCD\\xAE\\xFB", "ABEFCDAEFB"},
       {"to_hex(binary_string(c0))", "\\x54\\x65\\x73\\x74\\x53\\x74\\x72\\x69\\x6E\\x67", "54657374537472696E67"},
       {"to_hex(binary_string(c0))", "\\x00", "00"},
-      {"to_hex(binary_string(c0))", null, null},
+      {"to_hex(c0)", NULL_BINARY, NULL_VARCHAR},
     });
   }
 
   @Test
   public void testFromHex() throws Exception {
     testFunctions(new Object[][]{
-      {"from_hex(binary_string(c0))", "83", "\\x83"},
-      {"from_hex(binary_string(c0))", "ABCD", "\\xAB\\xCD"},
-      {"from_hex(binary_string(c0))", "ABEFCDAEFB", "\\xAB\\xEF\\xCD\\xAE\\xFB"},
-      {"from_hex(binary_string(c0))", "54657374537472696E67", "\\x54\\x65\\x73\\x74\\x53\\x74\\x72\\x69\\x6E\\x67"},
-      {"from_hex(binary_string(c0))", "00", "\\x00"},
-      {"from_hex(binary_string(c0))", null, null},
+      {"to_hex(from_hex(c0))", "83", "83"},
+      {"to_hex(from_hex(c0))", "ABCD", "ABCD"},
+      {"to_hex(from_hex(c0))", "ABEFCDAEFB", "ABEFCDAEFB"},
+      {"to_hex(from_hex(c0))", "54657374537472696E67", "54657374537472696E67"},
+      {"to_hex(from_hex(c0))", "00", "00"}
     });
   }
 
@@ -1308,9 +1307,10 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"ilike(c0, '%SuPer%')", "suppr", false},
       {"ilike(c0, '%SuPer%')", NULL_VARCHAR, NULL_BOOLEAN},
 
-      {"ilike(c0, 'ArM_')", "arm", false},
-      {"like(c0, 'ArM_')", "army", true},
-      {"like(c0, 'ArM_')", "armies", false},
+      {"ilike(c0, 'ArM%')", "carm", false},
+      {"ilike(c0, 'ArM%')", "army", true},
+      {"ilike(c0, '%ArM')", "break arm", true},
+      {"ilike(c0, '%ArM')", "new army", false},
     });
   }
 
@@ -1320,7 +1320,7 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"upper(c0)", "all", "ALL"},
       {"upper(c0)", "lowUP", "LOWUP"},
       {"upper(c0)", "alMoST aLl LoWer", "ALMOST ALL LOWER"},
-      {"upper(c0)", null, null},
+      {"upper(c0)", NULL_VARCHAR, NULL_VARCHAR},
     });
   }
 
@@ -1330,7 +1330,7 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"lower(c0)", "ALL", "all"},
       {"lower(c0)", "lowUP", "lowup"},
       {"lower(c0)", "alMoST aLl LoWer", "almost all lower"},
-      {"lower(c0)", null, null},
+      {"lower(c0)", NULL_VARCHAR, NULL_VARCHAR},
     });
   }
 
@@ -1339,8 +1339,8 @@ public class TestNativeFunctions extends BaseTestFunction {
     testFunctions(new Object[][]{
       {"initcap(c0)", "all", "All"},
       {"initcap(c0)", "low up", "Low Up"},
-      {"initcap(c0)", "alL musT be capitilizeD", "AlL MusT Be CapitlizeD"},
-      {"initcap(c0)", null, null},
+      {"initcap(c0)", "all Must be Capitlized", "All Must Be Capitlized"},
+      {"initcap(c0)", NULL_VARCHAR, NULL_VARCHAR},
     });
   }
 
@@ -1357,7 +1357,7 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"castINT(c0))", "\\x2D\\x32\\x31\\x34\\x37\\x34\\x38\\x33\\x36\\x34\\x38", Integer.MIN_VALUE},
     });
   }
-   
+
   @Test
   public void testCastBigInt() throws Exception {
     testFunctions(new Object[][]{
