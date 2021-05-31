@@ -46,6 +46,14 @@ public class HiveFunctionRegistry implements PluggableFunctionRegistry{
   private ArrayListMultimap<String, Class<? extends UDF>> methodsUDF = ArrayListMultimap.create();
   private HashSet<Class<?>> nonDeterministicUDFs = new HashSet<>();
 
+  public ArrayListMultimap<String, Class<? extends UDF>> getMethodsUDF() {
+    return this.methodsUDF;
+  }
+
+  public ArrayListMultimap<String, Class<? extends GenericUDF>> getMethodsGenericUDF() {
+    return this.methodsGenericUDF;
+  }
+
   /**
    * Scan the classpath for implementation of GenericUDF/UDF interfaces,
    * extracts function annotation and store the
