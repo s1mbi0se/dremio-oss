@@ -420,6 +420,7 @@ public class TestNativeFunctions extends BaseTestFunction {
 
   @Test
   public void testAscii() throws Exception {
+    // ASCII Hive function which returns the decimal code of the first character of input string
     testFunctions(new Object[][]{
       {"ascii(c0)", "hello", 104},
       {"ascii(c0)", "12345", 49},
@@ -429,10 +430,24 @@ public class TestNativeFunctions extends BaseTestFunction {
 
   @Test
   public void testSpace() throws Exception {
+    // Space Hive function - returns a string with a specified number of spaces
     testFunctions(new Object[][]{
       {"space(c0)", 1, " "},
       {"space(c0)", 2, "  "},
       {"space(c0)", 3, "   "},
+    });
+  }
+
+  @Test
+  public void testBinaryRepresentation() throws Exception {
+    // Bin Hive function - returns the binary representation of a specified integer or long
+    testFunctions(new Object[][]{
+      {"bin(c0)", 0, "0"},
+      {"bin(c0)", 7, "111"},
+      {"bin(c0)", 28550, "110111110000110"},
+      {"bin(c0)", -28550, "1111111111111111111111111111111111111111111111111001000001111010"},
+      {"bin(c0)", Long.MAX_VALUE, "111111111111111111111111111111111111111111111111111111111111111"},
+      {"bin(c0)", Long.MIN_VALUE, "1000000000000000000000000000000000000000000000000000000000000000"},
     });
   }
 

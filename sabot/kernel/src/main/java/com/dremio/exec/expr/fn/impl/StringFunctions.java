@@ -1620,6 +1620,56 @@ public class StringFunctions{
   }
 
   /**
+   * Returns a string binary representation of a specified integer.
+   */
+  @FunctionTemplate(names = {"bin"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class BinaryRepresentationInt implements SimpleFunction {
+
+    @Param IntHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = Long.toBinaryString(in.value).getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns a string binary representation of a specified long (big integer).
+   */
+  @FunctionTemplate(names = {"bin"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class BinaryRepresentationBigInt implements SimpleFunction {
+
+    @Param BigIntHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = Long.toBinaryString(in.value).getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
   * Returns the input char sequences repeated nTimes.
   */
   @FunctionTemplate(names = {"repeat", "repeatstr"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
