@@ -240,6 +240,33 @@ public static class ${func.className}${type.input} implements SimpleFunction {
 </#list>
 </#list>
 
+//////////////////////////////////////////////////////////////////////////////////////////////////
+//Function to handle Log with specific base 2.
+//////////////////////////////////////////////////////////////////////////////////////////////////
+<#list mathFunc.logBase2MathFunction as func>
+<#list func.types as type>
+
+@FunctionTemplate(name = "${func.funcName}", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+public static class ${func.className}${type.input} implements SimpleFunction {
+
+  @Param ${type.input}Holder val;
+  @Output ${func.outputType}Holder out;
+
+  public void setup() {
+  }
+
+  public void eval() {
+	<#if type.input?matches("^Decimal[1-9]*")>
+    double dblval = new java.math.BigDecimal(val.value).setScale(val.scale).doubleValue();
+    out.value = ${func.javaFunc}(dblval)/ ${func.javaFunc}(2);
+	<#else>
+    out.value = ${func.javaFunc}(val.value)/ ${func.javaFunc}(2);
+	</#if>
+  }
+}
+</#list>
+</#list>
+
 
 }
 

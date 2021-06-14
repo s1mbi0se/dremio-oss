@@ -119,6 +119,15 @@ logBaseMathFunction : [
     ]
    }
 ],
+logBase2MathFunction : [
+ {className: "LogBase2", funcName: "log2", javaFunc : "java.lang.Math.log", outputType: "Float8", types: [
+      {input: "Int"},
+      {input: "BigInt"},
+      {input: "Float4"},
+      {input: "Float8"},
+    ]
+   }
+],
 extendedUnaryMathFunctions : [
  {className: "Cbrt", funcName: "cbrt", javaFunc : "java.lang.Math.cbrt", outputType: "Float8", types: [
       {input: "Int"},

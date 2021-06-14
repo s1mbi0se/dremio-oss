@@ -46,6 +46,8 @@ public class TestNewMathFunctions extends BaseTestFunction {
      { "cbrt(1000)", Math.cbrt(1000)},
      { "log(10)", Math.log(10)},
      { "log10(10)", Math.log10(10)},
+     { "log2(10)", Math.log(10)/Math.log(2)},
+     { "log2(10.0)", Math.log(10.0)/Math.log(2.0)},
      { "log(2.0, 64.0)", (Math.log(64.0)/Math.log(2.0))},
      { "log(2.0)", Math.log(2.0)},
      { "log(2)", Math.log(2.0)},
