@@ -419,6 +419,24 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testAscii() throws Exception {
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"ascii(c0)", "hello", 104},
+      {"ascii(c0)", "12345", 49},
+      {"ascii(c0)", "ABC", 65},
+    });
+  }
+
+  @Test
+  public void testSpace() throws Exception {
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"space(c0)", 1, " "},
+      {"space(c0)", 2, "  "},
+      {"space(c0)", 3, "   "},
+    });
+  }
+
+  @Test
   public void testLike() throws Exception {
 
     testFunctions(new Object[][]{
