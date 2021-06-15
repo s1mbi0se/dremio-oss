@@ -18,6 +18,7 @@ package com.dremio.exec.expr.fn.impl;
 import static com.dremio.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder;
 
 import java.nio.charset.Charset;
+import java.util.Base64;
 
 import javax.inject.Inject;
 
@@ -1790,6 +1791,60 @@ public class StringFunctions{
       out.buffer.setBytes(0, outBytea);
       out.start = 0;
       out.end = outBytea.length;
+    }
+  }
+
+  /**
+   * Returns the base64 encoded string.
+   */
+  @FunctionTemplate(names = {"base64"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Base64VarChar implements SimpleFunction {
+
+    @Param VarBinaryHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(0, buf);
+      byte[] resultBuf = Base64.getEncoder().encodeToString(buf).getBytes();
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns the base64 decoded binary.
+   */
+  @FunctionTemplate(names = {"unbase64"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Unbase64VarChar implements SimpleFunction {
+
+    @Param VarCharHolder in;
+    @Output VarBinaryHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(0, buf);
+      byte[] resultBuf = Base64.getDecoder().decode(buf);
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
     }
   }
 }

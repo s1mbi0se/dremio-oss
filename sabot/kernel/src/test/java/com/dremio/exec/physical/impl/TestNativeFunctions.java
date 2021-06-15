@@ -34,6 +34,7 @@ import static com.dremio.sabot.Fixtures.tr;
 import static com.dremio.sabot.Fixtures.ts;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.arrow.gandiva.evaluator.FunctionSignature;
@@ -448,6 +449,19 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"bin(c0)", -28550, "1111111111111111111111111111111111111111111111111001000001111010"},
       {"bin(c0)", Long.MAX_VALUE, "111111111111111111111111111111111111111111111111111111111111111"},
       {"bin(c0)", Long.MIN_VALUE, "1000000000000000000000000000000000000000000000000000000000000000"},
+    });
+  }
+
+  @Test
+  public void testBase64Unbase64() throws Exception {
+    // Base64 and Unbase64 Hive functions - returns the respective encoded and decoded base64 values
+    testFunctions(new Object[][]{
+      {"base64(c0)", "hello".getBytes(), "aGVsbG8="},
+      {"base64(c0)", "test".getBytes(), "dGVzdA=="},
+      {"base64(c0)", "hive".getBytes(), "aGl2ZQ=="},
+      {"unbase64(c0)", "aGVsbG8=", "hello".getBytes()},
+      {"unbase64(c0)", "dGVzdA==", "test".getBytes()},
+      {"unbase64(c0)", "aGl2ZQ==", "hive".getBytes()},
     });
   }
 
