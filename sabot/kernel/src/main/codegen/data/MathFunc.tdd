@@ -84,6 +84,21 @@ unaryMathFunctions : [
       {input: "Int", outputType: "Int", castType: "int"},
       {input: "BigInt", outputType: "BigInt", castType: "long"},
      ]
+    },
+    {className: "ShiftLeft", funcName: "shiftleft", javaFunc: " << ", types: [
+      {input: "Int", outputType: "Int", castType: "int"},
+      {input: "BigInt", outputType: "BigInt", castType: "long"},
+     ]
+    },
+    {className: "ShiftRight", funcName: "shiftright", javaFunc: " >> ", types: [
+      {input: "Int", outputType: "Int", castType: "int"},
+      {input: "BigInt", outputType: "BigInt", castType: "long"},
+     ]
+    },
+    {className: "ShiftRightUnsigned", funcName: "shiftrightunsigned", javaFunc: " >>> ", types: [
+      {input: "Int", outputType: "Int", castType: "int"},
+      {input: "BigInt", outputType: "BigInt", castType: "long"},
+     ]
     }
   ],
   otherMathFunctions : [
