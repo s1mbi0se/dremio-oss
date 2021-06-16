@@ -290,6 +290,58 @@ public class StringFunctions{
   }
 
   /*
+   * Replace all substring that match the regular expression with replacement.
+   */
+  @FunctionTemplate(name = "regexp_extract", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class RegexpExtract implements SimpleFunction {
+
+    @Param VarCharHolder input;
+    @Param(constant=true) VarCharHolder pattern;
+    @Param IntHolder index;
+    @Inject ArrowBuf buffer;
+    @Workspace java.util.regex.Matcher matcher;
+    @Output VarCharHolder out;
+    @Inject FunctionErrorContext errCtx;
+
+    @Override
+    public void setup() {
+      matcher = com.dremio.exec.expr.fn.impl.StringFunctionUtil.compilePattern(
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(pattern.start, pattern.end, pattern.buffer),
+        errCtx
+      ).matcher("");
+    }
+
+    @Override
+    public void eval() {
+      out.start = 0;
+      matcher.reset(
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(input.start, input.end, input.buffer));
+      boolean result = matcher.find();
+      if (result) {
+        String r;
+        try {
+          r = matcher.group(index.value);
+        } catch (IndexOutOfBoundsException e) {
+          throw errCtx.error()
+            .message("Invalid group index '%s'", index.value)
+            .addContext("exception", e.getMessage())
+            .build();
+        }
+        final byte [] bytea = r.getBytes(java.nio.charset.Charset.forName("UTF-8"));
+        out.buffer = buffer = buffer.reallocIfNeeded(bytea.length);
+        out.buffer.setBytes(out.start, bytea);
+        out.end = bytea.length;
+      }
+      else {
+        // There is no matches, copy the input bytes into the output buffer
+        out.buffer = buffer = buffer.reallocIfNeeded(input.end - input.start);
+        out.buffer.setBytes(0, input.buffer, input.start, input.end - input.start);
+        out.end = input.end - input.start;
+      }
+    }
+  }
+
+  /*
    * Match the given input against a regular expression.
    *
    * This differs from the "similar" function in that accepts a standard regex, rather than a SQL regex.

@@ -481,6 +481,15 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testRegexpExtract() throws Exception {
+    testFunctions(new Object[][]{
+      {"regexp_extract(c0, 'foo(.*?)(bar)', 2)", "foothebar", "bar"},
+      {"regexp_extract(c0, '@(.*)', 0)", "john@test.com", "@test.com"},
+      {"regexp_extract(c0, '(.*) (D.*)', 2)", "John Doe", "Doe"},
+    });
+  }
+
+  @Test
   public void testBinary() throws Exception {
     byte[] hello = "hello".getBytes();
 
