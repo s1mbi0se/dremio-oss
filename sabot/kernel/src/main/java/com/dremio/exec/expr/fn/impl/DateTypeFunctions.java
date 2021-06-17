@@ -375,6 +375,42 @@ public class DateTypeFunctions {
     }
 
     @SuppressWarnings("unused")
+    @FunctionTemplate(names = {"last_day"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
+    public static class LastDayDate implements SimpleFunction {
+      @Param DateMilliHolder in;
+      @Output DateMilliHolder out;
+      @Workspace org.joda.time.LocalDateTime date;
+
+      @Override
+      public void setup() {
+      }
+
+      @Override
+      public void eval() {
+        date = new org.joda.time.LocalDateTime(in.value, org.joda.time.DateTimeZone.UTC);
+        out.value = com.dremio.common.util.DateTimes.toMillis(date.dayOfMonth().withMaximumValue());
+      }
+    }
+
+    @SuppressWarnings("unused")
+    @FunctionTemplate(names = {"last_day"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
+    public static class LastDayTimestamp implements SimpleFunction {
+      @Param TimeStampMilliHolder in;
+      @Output DateMilliHolder out;
+      @Workspace org.joda.time.LocalDateTime date;
+
+      @Override
+      public void setup() {
+      }
+
+      @Override
+      public void eval() {
+        date = new org.joda.time.LocalDateTime(in.value, org.joda.time.DateTimeZone.UTC);
+        out.value = com.dremio.common.util.DateTimes.toMillis(date.dayOfMonth().withMaximumValue());
+      }
+    }
+
+    @SuppressWarnings("unused")
     @FunctionTemplate(names = {"date_add", "add"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
     public static class DateTimeAddFunction implements SimpleFunction {
     @Param DateMilliHolder left;
