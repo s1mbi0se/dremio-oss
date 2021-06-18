@@ -300,6 +300,12 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"extractMonth(c0)", ts("1970-01-02T10:20:33"), 1l},
       {"extractYear(c0)", ts("1970-01-02T10:20:33"), 1970l},
       {"extractSecond(c0)", ts("1970-01-02T10:20:33"), 33l},
+      {"minute(c0)", ts("1970-01-02T10:20:33"), 20l},
+      {"hour(c0)", ts("1970-01-02T10:20:33"), 10l},
+      {"day(c0)", ts("1970-01-02T10:20:33"), 2l},
+      {"month(c0)", ts("1970-01-02T10:20:33"), 1l},
+      {"year(c0)", ts("1970-01-02T10:20:33"), 1970l},
+      {"second(c0)", ts("1970-01-02T10:20:33"), 33l},
     });
   }
 
@@ -309,6 +315,10 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"extractDay(c0)", date("1970-01-02"), 2l},
       {"extractMonth(c0)", date("1970-01-02"), 1l},
       {"extractYear(c0)", date("1970-01-02"), 1970l},
+      {"day(c0)", date("1970-01-02"), 2l},
+      {"dayofmonth(c0)", date("1970-01-02"), 2l},
+      {"month(c0)", date("1970-01-02"), 1l},
+      {"year(c0)", date("1970-01-02"), 1970l},
     });
 
   }
@@ -319,6 +329,9 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"extractMinute(c0)", time("10:20:33"), 20l},
       {"extractHour(c0)", time("10:20:33"), 10l},
       {"extractSecond(c0)", time("10:20:33"), 33l},
+      {"minute(c0)", time("10:20:33"), 20l},
+      {"hour(c0)", time("10:20:33"), 10l},
+      {"second(c0)", time("10:20:33"), 33l},
     });
   }
 
