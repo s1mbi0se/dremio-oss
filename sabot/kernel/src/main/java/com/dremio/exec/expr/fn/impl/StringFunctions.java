@@ -1534,7 +1534,7 @@ public class StringFunctions{
     }
   }
 
-  @FunctionTemplate(name = "from_hex", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  @FunctionTemplate(names = {"from_hex", "unhex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
   public static class FromHex implements SimpleFunction {
     @Param  VarCharHolder in;
     @Output VarBinaryHolder out;
@@ -1554,8 +1554,8 @@ public class StringFunctions{
     }
   }
 
-  @FunctionTemplate(name = "to_hex", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
-  public static class ToHex implements SimpleFunction {
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexVarBinary implements SimpleFunction {
     @Param  VarBinaryHolder in;
     @Output VarCharHolder   out;
     @Workspace Charset charset;
@@ -1573,6 +1573,30 @@ public class StringFunctions{
       out.buffer = buffer = buffer.reallocIfNeeded(buf.length);
       buffer.setBytes(0, buf);
       buffer.setIndex(0, buf.length);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexBigInt implements SimpleFunction{
+    @Param BigIntHolder in;
+    @Output VarCharHolder   out;
+    @Workspace Charset charset;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+      charset = java.nio.charset.Charset.forName("UTF-8");
+    }
+
+    @Override
+    public void eval() {
+      String string = String.format("%X", in.value);
+      byte[] buf = string.getBytes();
+      buffer.setBytes(0, buf);
 
       out.start = 0;
       out.end = buf.length;

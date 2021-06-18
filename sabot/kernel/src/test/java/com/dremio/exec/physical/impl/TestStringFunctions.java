@@ -48,6 +48,7 @@ public class TestStringFunctions extends BaseTestFunction {
       {"to_hex(binary_string('\\\\x11\\\\x22'))", "1122"},
       {"string_binary(from_hex('1112'))", "\\x11\\x12"},
       {"to_hex(repeatstr(binary_string('\\\\x11\\\\x22'),256))", repeat("1122", 256)},
+      {"to_hex(c0)", 6713199L, "666F6F"},
     });
   }
 
