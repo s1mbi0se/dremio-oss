@@ -41,39 +41,39 @@ import javax.inject.Inject;
  */
 
 @SuppressWarnings("unused")
-@FunctionTemplate(names = {"hashMD5", "md5"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+@FunctionTemplate(names = {"hashSHA1", "sha1"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
 public class G${type}ToMD5 implements SimpleFunction{
     @Param  ${type}Holder in;
     @Inject ArrowBuf buffer;
     @Output VarCharHolder out;
     @Inject FunctionErrorContext errCtx;
 
-  @Override
-  public void setup() {
-    }
+    @Override
+    public void setup() {
+      }
 
-  @Override
-  public void eval() {
+    @Override
+    public void eval() {
 <#if ${type} == "BigInt">
     byte[] buf = Long.toBinaryString(in.value).getBytes();
 </#if>
 <#elseif ${type} == "Decimal">
-  byte[] buf = com.dremio.common.util.DremioStringUtils.toBinaryStringNoFormat(io.netty.buffer.NettyArrowBuf.unwrapBuffer(in.buffer), (int) in
-  .start, 16).getBytes();
+    byte[] buf = com.dremio.common.util.DremioStringUtils.toBinaryStringNoFormat(io.netty.buffer.NettyArrowBuf.unwrapBuffer(in.buffer), (int) in
+    .start, 16).getBytes();
 </#elseif>
 <#elseif ${type} == "Float4">
-  byte[] buf = Float.toBinaryString(in.value).getBytes();
+    byte[] buf = Float.toBinaryString(in.value).getBytes();
 </#elseif>
 <#elseif ${type} == "Float8">
-  byte[] buf = Double.toBinaryString(in.value).getBytes();
+    byte[] buf = Double.toBinaryString(in.value).getBytes();
 </#elseif>
 <#else>
-  byte[] buf = ${type}.toBinaryString(in.value).getBytes();
+    byte[] buf = ${type}.toBinaryString(in.value).getBytes();
 </#else>
-    buffer.setBytes(0, DigestUtils.md5(buf));
+    buffer.setBytes(0, DigestUtils.sha1(buf));
 
     out.start = 0;
     out.end = buf.length;
     out.buffer = buffer;
     }
-}
+  }
