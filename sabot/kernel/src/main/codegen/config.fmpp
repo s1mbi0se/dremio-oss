@@ -34,6 +34,7 @@ data: {
     covarTypes:               tdd(../data/CovarTypes.tdd),
     corrTypes:                tdd(../data/CorrelationTypes.tdd),
     logicalTypes:             tdd(../data/AggrBitwiseLogicalTypes.tdd),
+    hashTypes:                tdd(../data/HashFunctionsTypes.tdd),
     parser:                   tdd(../data/Parser.tdd),
     dateIntervalFunc:         tdd(../data/DateIntervalFunc.tdd),
     intervalNumericTypes:     tdd(../data/IntervalNumericTypes.tdd),

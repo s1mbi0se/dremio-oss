@@ -15,9 +15,10 @@
  */
 package com.dremio.exec.physical.impl;
 
+import com.dremio.sabot.BaseTestFunction;
 import org.junit.Test;
 
-import com.dremio.sabot.BaseTestFunction;
+import java.math.BigDecimal;
 
 public class TestStringFunctions extends BaseTestFunction {
   /**
@@ -39,6 +40,44 @@ public class TestStringFunctions extends BaseTestFunction {
       {"length('aababcdf')", 8},
       {"length('')", 0},
       {"length(c0)", "abc", 3}
+    });
+  }
+
+  @Test
+  public void md5HashTest(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"to_hex(binary_string(md5(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]", "a633460644425b44e0e023d6980849cc".toUpperCase()},
+      {"to_hex(binary_string(hashMD5(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]".getBytes(), "a633460644425b44e0e023d6980849cc".toUpperCase()},
+      {"to_hex(binary_string(md5(c0)))", Long.MAX_VALUE, "BD5F6598B2D2CD7F130BA3E152116FF7"},
+      {"to_hex(binary_string(md5(c0)))", Integer.MAX_VALUE, "37497AD6A0C4F123CD1A39278AFC6869"},
+      {"to_hex(binary_string(hashMD5(c0)))", Float.MAX_VALUE, "8A18AEED5CAFF58AA370B52E36DCBC3F"},
+      {"to_hex(binary_string(md5(c0)))", Double.MAX_VALUE, "5801BDC2D76B6EA9B7091A5026CAF731"},
+      {"to_hex(binary_string(md5(c0)))", BigDecimal.valueOf(Long.MAX_VALUE), "316E8EB7B578786FE5036D150D71E44A"},
+    });
+  }
+
+  @Test
+  public void sha1HashTest(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"to_hex(binary_string(sha1(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]", "8C6A880CE350769627CAA70F3526AEEDCC4C959D"},
+      {"to_hex(binary_string(hashSHA1(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]".getBytes(), "8C6A880CE350769627CAA70F3526AEEDCC4C959D"},
+      {"to_hex(binary_string(sha1(c0)))", Long.MAX_VALUE, "BF7F9F8D6E0A3426AEF3F0CE773E69E85821EFC7"},
+      {"to_hex(binary_string(hashSHA1(c0)))", Integer.MAX_VALUE, "6C28217EECDB75AC5378D20243029696F5E633A1"},
+      {"to_hex(binary_string(sha1(c0)))", Float.MAX_VALUE, "26AE45CABD7D1BD5EA3D6511D0FDBF5F196F8AD5"},
+      {"to_hex(binary_string(hashSHA1(c0)))", Double.MAX_VALUE, "DE1E67A299928343DD050A52FDE96FEB3F1F3028"},
+      {"to_hex(binary_string(sha1(c0)))", BigDecimal.valueOf(Long.MAX_VALUE), "9CCEC2A0EAA5E598885108FE112146A272BBFB50"},
+    });
+  }
+  @Test
+  public void sha256HashTest(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"to_hex(binary_string(sha256(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]", "68E676F563660BBEBF718D3E062E1A56339B7BA61E48A116C9844298B1D41641"},
+      {"to_hex(binary_string(hashSHA256(c0)))", "ði ıntəˈnæʃənəl fəˈnɛtık əsoʊsiˈeıʃnY [ˈʏpsilɔn], Yen [jɛn], Yoga [ˈjoːgɑ]".getBytes(), "68E676F563660BBEBF718D3E062E1A56339B7BA61E48A116C9844298B1D41641"},
+      {"to_hex(binary_string(sha256(c0)))", Long.MAX_VALUE, "C624EEBF5B9282431FC4E19C3C707A012275E198D3A077DCD36A7B74E4A804AD"},
+      {"to_hex(binary_string(hashSHA256(c0)))", Integer.MAX_VALUE, "24AE0D93F1AF72ADDC019182FAE1AB44547A1E84758785745F4358373EAB1960"},
+      {"to_hex(binary_string(sha256(c0)))", Float.MAX_VALUE, "DDE5BCFF31E3B2E6085239AF1DA9827447D0705E8500092AB6BDF699D819C231"},
+      {"to_hex(binary_string(hashSHA256(c0)))", Double.MAX_VALUE, "88DC7B5696598BB5BB3B0A3100300DB6FA58D87CAC4CEE380462588CF04B9015"},
+      {"to_hex(binary_string(sha256(c0)))", BigDecimal.valueOf(Long.MAX_VALUE+Integer.MAX_VALUE), "4BEF15C9E93BF845C1EBF6EC9DA538FACF86154682CB23DA4A8516EC3A1B3C09"},
     });
   }
 

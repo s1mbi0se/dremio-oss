@@ -17,6 +17,7 @@ package com.dremio.exec.expr.fn.impl;
 
 import static com.dremio.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder;
 
+import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Base64;
 
@@ -40,6 +41,7 @@ import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.exec.expr.fn.FunctionErrorContext;
 
 import io.netty.buffer.ByteBuf;
+import org.apache.commons.codec.digest.DigestUtils;
 
 public class StringFunctions{
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StringFunctions.class);
@@ -1594,8 +1596,8 @@ public class StringFunctions{
 
     @Override
     public void eval() {
-      String string = String.format("%X", in.value);
-      byte[] buf = string.getBytes();
+      String hex_format = String.format("%X", in.value);
+      byte[] buf = hex_format.getBytes();
       buffer.setBytes(0, buf);
 
       out.start = 0;
