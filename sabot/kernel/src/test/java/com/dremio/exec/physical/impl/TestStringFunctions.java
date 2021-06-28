@@ -92,7 +92,7 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
-  public void testAscii() throws Exception {
+  public void testAscii(){
     // ASCII Hive function which returns the decimal code of the first character of input string
     testFunctions(new Object[][]{
       {"ascii(c0)", "hello", 104},
@@ -102,7 +102,7 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
-  public void testSpace() throws Exception {
+  public void testSpace(){
     // Space Hive function - returns a string with a specified number of spaces
     testFunctions(new Object[][]{
       {"space(c0)", 1, " "},
@@ -112,7 +112,7 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
-  public void testBinaryRepresentation() throws Exception {
+  public void testBinaryRepresentation(){
     // Bin Hive function - returns the binary representation of a specified integer or long
     testFunctions(new Object[][]{
       {"bin(c0)", 0, "0"},
@@ -125,7 +125,7 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
-  public void testBase64Unbase64() throws Exception {
+  public void testBase64Unbase64(){
     // Base64 and Unbase64 Hive functions - returns the respective encoded and decoded base64 values
     testFunctionsInterpretedOnly(new Object[][]{
       {"base64(c0)", "hello".getBytes(), "aGVsbG8="},
