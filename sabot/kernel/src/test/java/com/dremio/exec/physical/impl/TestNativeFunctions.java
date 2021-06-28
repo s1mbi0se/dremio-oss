@@ -34,7 +34,6 @@ import static com.dremio.sabot.Fixtures.tr;
 import static com.dremio.sabot.Fixtures.ts;
 
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import org.apache.arrow.gandiva.evaluator.FunctionSignature;
