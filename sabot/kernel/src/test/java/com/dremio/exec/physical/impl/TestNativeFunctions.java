@@ -433,52 +433,6 @@ public class TestNativeFunctions extends BaseTestFunction {
   }
 
   @Test
-  public void testAscii() throws Exception {
-    // ASCII Hive function which returns the decimal code of the first character of input string
-    testFunctions(new Object[][]{
-      {"ascii(c0)", "hello", 104},
-      {"ascii(c0)", "12345", 49},
-      {"ascii(c0)", "ABC", 65},
-    });
-  }
-
-  @Test
-  public void testSpace() throws Exception {
-    // Space Hive function - returns a string with a specified number of spaces
-    testFunctions(new Object[][]{
-      {"space(c0)", 1, " "},
-      {"space(c0)", 2, "  "},
-      {"space(c0)", 3, "   "},
-    });
-  }
-
-  @Test
-  public void testBinaryRepresentation() throws Exception {
-    // Bin Hive function - returns the binary representation of a specified integer or long
-    testFunctions(new Object[][]{
-      {"bin(c0)", 0, "0"},
-      {"bin(c0)", 7, "111"},
-      {"bin(c0)", 28550, "110111110000110"},
-      {"bin(c0)", -28550, "1111111111111111111111111111111111111111111111111001000001111010"},
-      {"bin(c0)", Long.MAX_VALUE, "111111111111111111111111111111111111111111111111111111111111111"},
-      {"bin(c0)", Long.MIN_VALUE, "1000000000000000000000000000000000000000000000000000000000000000"},
-    });
-  }
-
-  @Test
-  public void testBase64Unbase64() throws Exception {
-    // Base64 and Unbase64 Hive functions - returns the respective encoded and decoded base64 values
-    testFunctions(new Object[][]{
-      {"base64(c0)", "hello".getBytes(), "aGVsbG8="},
-      {"base64(c0)", "test".getBytes(), "dGVzdA=="},
-      {"base64(c0)", "hive".getBytes(), "aGl2ZQ=="},
-      {"unbase64(c0)", "aGVsbG8=", "hello".getBytes()},
-      {"unbase64(c0)", "dGVzdA==", "test".getBytes()},
-      {"unbase64(c0)", "aGl2ZQ==", "hive".getBytes()},
-    });
-  }
-
-  @Test
   public void testLike() throws Exception {
 
     testFunctions(new Object[][]{
@@ -490,15 +444,6 @@ public class TestNativeFunctions extends BaseTestFunction {
       {"like(c0, 'arm_')", "arm", false},
       {"like(c0, 'arm_')", "army", true},
       {"like(c0, 'arm_')", "armies", false},
-    });
-  }
-
-  @Test
-  public void testRegexpExtract() throws Exception {
-    testFunctions(new Object[][]{
-      {"regexp_extract(c0, 'foo(.*?)(bar)', 2)", "foothebar", "bar"},
-      {"regexp_extract(c0, '@(.*)', 0)", "john@test.com", "@test.com"},
-      {"regexp_extract(c0, '(.*) (D.*)', 2)", "John Doe", "Doe"},
     });
   }
 
