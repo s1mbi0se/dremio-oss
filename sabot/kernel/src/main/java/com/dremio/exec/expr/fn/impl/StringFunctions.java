@@ -17,10 +17,9 @@ package com.dremio.exec.expr.fn.impl;
 
 import static com.dremio.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder;
 
-import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.util.Base64;
-import java.util.Locale;
+import java.util.Optional;
 
 import javax.inject.Inject;
 
@@ -42,7 +41,6 @@ import com.dremio.exec.expr.annotations.Workspace;
 import com.dremio.exec.expr.fn.FunctionErrorContext;
 
 import io.netty.buffer.ByteBuf;
-import org.apache.commons.codec.digest.DigestUtils;
 
 public class StringFunctions{
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StringFunctions.class);
@@ -1607,6 +1605,36 @@ public class StringFunctions{
     public void eval() {
       String hex_format = String.format("%X", in.value);
       byte[] buf = hex_format.getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(name = "parse_url", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ParseURL implements SimpleFunction{
+    @Param VarCharHolder   in;
+    @Param(constant = true) VarCharHolder   partToExtract;
+    @Output VarCharHolder   out;
+    @Inject ArrowBuf buffer;
+
+    @Inject FunctionErrorContext errCtx;
+
+    @Workspace String urlPart;
+
+    @Override
+    public void setup() {
+      urlPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(partToExtract.start, partToExtract.end, partToExtract.buffer);
+    }
+
+    @Override
+    public void eval() {
+      String url = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
+      Optional<String> extractPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.parseURL(url, urlPart, errCtx);
+
+      byte[] buf = extractPart.orElse("").getBytes();
       buffer.setBytes(0, buf);
 
       out.start = 0;

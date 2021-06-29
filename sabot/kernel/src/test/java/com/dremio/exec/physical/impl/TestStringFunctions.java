@@ -92,6 +92,20 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void parseUrl(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'PROTOCOL')", "http"},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'HOST')", "facebook.com"},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'AUTHORITY')", "facebook.com"},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'REF')", ""},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY')", "query=1"},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'FILE')", "/path/p1.php?query=1"},
+      {"parse_url('http://facebook.com/path/p1.php?query=1', 'PATH')", "/path/p1.php"},
+      {"parse_url('http://userinfo@facebook.com/path/p1.php?query=1', 'USERINFO')", "userinfo"},
+    });
+  }
+
+  @Test
   public void testAscii(){
     // ASCII Hive function which returns the decimal code of the first character of input string
     testFunctions(new Object[][]{
