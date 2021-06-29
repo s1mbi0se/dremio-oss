@@ -1566,6 +1566,32 @@ public class StringFunctions{
   }
 
   @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexVarChar implements SimpleFunction {
+    @Param  VarCharHolder   in;
+    @Output VarCharHolder   out;
+    @Workspace Charset charset;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+      charset = java.nio.charset.Charset.forName("UTF-8");
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = com.dremio.common.util.DremioStringUtils.toBinaryStringNoFormat(io.netty.buffer.NettyArrowBuf.unwrapBuffer(in.buffer), in
+        .start, in.end).getBytes(charset);
+      out.buffer = buffer = buffer.reallocIfNeeded(buf.length);
+      buffer.setBytes(0, buf);
+      buffer.setIndex(0, buf.length);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
   public static class ToHexBigInt implements SimpleFunction{
     @Param BigIntHolder in;
     @Output VarCharHolder   out;
