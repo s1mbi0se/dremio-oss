@@ -643,6 +643,35 @@ public class StringFunctions{
     }
   }
 
+  /*
+   * Find substring in a string subset separated by comma.
+   */
+  @FunctionTemplate(name = "find_in_set", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class FindInSet implements SimpleFunction {
+
+    @Param VarCharHolder in;
+    @Param VarCharHolder text;
+    @Output IntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      final String look = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
+      final String[] set =
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(text.start, text.end, text.buffer).split(",", -1);
+
+      for (int i = 0; i < set.length; i++) {
+        if (set[i].equals(look)) {
+          out.value = i + 1;
+          break;
+        }
+      }
+    }
+  }
+
 
   // Follow Postgre.
   //  -- Valid "offset": [1, string_length],

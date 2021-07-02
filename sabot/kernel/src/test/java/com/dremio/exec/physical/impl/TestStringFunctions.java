@@ -120,6 +120,17 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testFindInSet(){
+    // FIND_IN_SET Hive function which returns the position of a string in a set of strings separated by comma
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"find_in_set(c0, c1)", "A", "A,B,C", 1},
+      {"find_in_set(c0, c1)", "", "A,B,C,", 4},
+      {"find_in_set(c0, c1)", "", ",A,B,C,", 1},
+      {"find_in_set(c0, c1)", "", "A,B,,C,", 3}
+    });
+  }
+
+  @Test
   public void testSpace(){
     // Space Hive function - returns a string with a specified number of spaces
     testFunctions(new Object[][]{
