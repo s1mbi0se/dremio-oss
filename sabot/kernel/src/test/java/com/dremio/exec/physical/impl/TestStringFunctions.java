@@ -131,6 +131,18 @@ public class TestStringFunctions extends BaseTestFunction {
   }
 
   @Test
+  public void testCrc32(){
+    // FIND_IN_SET Hive function which returns the position of a string in a set of strings separated by comma
+    testFunctionsInterpretedOnly(new Object[][]{
+      {"crc32(c0)", "ABC", 2743272264L},
+      {"crc32(c0)", "Hello", 4157704578L},
+      {"crc32(c0)", "hive", 3698179064L},
+      {"crc32(c0)", "372189372123", 2607335846L},
+      {"crc32(c0)", "", 0L},
+    });
+  }
+
+  @Test
   public void testSpace(){
     // Space Hive function - returns a string with a specified number of spaces
     testFunctions(new Object[][]{

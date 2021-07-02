@@ -21,6 +21,7 @@ import java.nio.charset.Charset;
 import java.util.Base64;
 import java.util.Optional;
 import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 
 import javax.inject.Inject;
 
@@ -669,6 +670,52 @@ public class StringFunctions{
           break;
         }
       }
+    }
+  }
+
+  /*
+   * Define the crc32 checksum value
+   */
+  @FunctionTemplate(name = "crc32", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Crc32VarChar implements SimpleFunction {
+
+    @Param VarCharHolder in;
+    @Output BigIntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(in.start, buf);
+      CRC32 crc = new CRC32();
+      crc.update(buf);
+      out.value = crc.getValue();
+    }
+  }
+
+  /*
+   * Define the crc32 checksum value
+   */
+  @FunctionTemplate(name = "crc32", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Crc32VarBinary implements SimpleFunction {
+
+    @Param VarBinaryHolder in;
+    @Output BigIntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(in.start, buf);
+      CRC32 crc = new CRC32();
+      crc.update(buf);
+      out.value = crc.getValue();
     }
   }
 
