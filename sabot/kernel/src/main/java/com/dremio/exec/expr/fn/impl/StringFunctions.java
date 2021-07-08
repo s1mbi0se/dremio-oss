@@ -1694,7 +1694,7 @@ public class StringFunctions{
   public static class ParseURL implements SimpleFunction{
     @Param VarCharHolder   in;
     @Param(constant = true) VarCharHolder   partToExtract;
-    @Output VarCharHolder   out;
+    @Output NullableVarCharHolder   out;
     @Inject ArrowBuf buffer;
 
     @Inject FunctionErrorContext errCtx;
@@ -1712,21 +1712,24 @@ public class StringFunctions{
       String url = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
       Optional<String> extractPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.parseURL(url, urlPart, errCtx);
 
-      byte[] buf = extractPart.orElse("").getBytes();
-      buffer.setBytes(0, buf);
+      extractPart.ifPresent(val ->{
+        out.isSet = 1;
+        byte[] buf = val.getBytes();
+        buffer.setBytes(0, buf);
 
-      out.start = 0;
-      out.end = buf.length;
-      out.buffer = buffer;
+        out.start = 0;
+        out.end = buf.length;
+        out.buffer = buffer;
+      });
     }
   }
 
-  @FunctionTemplate(name = "parse_url", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  @FunctionTemplate(name = "parse_url", scope = FunctionScope.SIMPLE, nulls = NullHandling.INTERNAL)
   public static class ParseURLQueryKey implements SimpleFunction{
     @Param VarCharHolder   in;
     @Param(constant = true) VarCharHolder   partToExtract;
     @Param VarCharHolder   queryKey;
-    @Output VarCharHolder   out;
+    @Output NullableVarCharHolder   out;
     @Inject ArrowBuf buffer;
     @Inject FunctionErrorContext errCtx;
 
@@ -1756,13 +1759,15 @@ public class StringFunctions{
       String url = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
       Optional<String> extractValue = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.parseURLQueryKey(url, urlPart,
         pattern, errCtx);
+      extractValue.ifPresent(val ->{
+        out.isSet = 1;
+        byte[] buf = val.getBytes();
+        buffer.setBytes(0, buf);
 
-      byte[] buf = extractValue.orElse("").getBytes();
-      buffer.setBytes(0, buf);
-
-      out.start = 0;
-      out.end = buf.length;
-      out.buffer = buffer;
+        out.start = 0;
+        out.end = buf.length;
+        out.buffer = buffer;
+      });
     }
   }
 

@@ -96,8 +96,9 @@ public class TestStringFunctions extends BaseTestFunction {
     testFunctionsInterpretedOnly(new Object[][]{
       {"parse_url('http://facebook.com/path/p1.php?query=1', 'PROTOCOL')", "http"},
       {"parse_url('http://facebook.com/path/p1.php?query=1', 'HOST')", "facebook.com"},
+      {"parse_url('http://127.0.0.0:8080/path/p1.php?query=1', 'HOST')", "127.0.0.0"},
       {"parse_url('http://facebook.com/path/p1.php?query=1', 'AUTHORITY')", "facebook.com"},
-      {"parse_url('http://facebook.com/path/p1.php?query=1', 'REF')", ""},
+      {"parse_url('http://127.0.0.0:8080/path/p1.php?query=1', 'AUTHORITY')", "127.0.0.0:8080"},
       {"parse_url('http://facebook.com/path/p1.php?query=1#ref', 'REF')", "ref"},
       {"parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY')", "query=1"},
       {"parse_url('http://facebook.com/path/p1.php?query=1', 'QUERY', 'query')", "1"},
