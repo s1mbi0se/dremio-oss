@@ -42,4 +42,16 @@ public class TestMathFunctions extends BaseTestFunction {
       {"factorial(c0)", 20, 2432902008176640000L},
     });
   }
+
+  @Test
+  public void testPmodFunctions() throws Exception {
+    testFunctions(new Object[][]{
+      {"pmod(3, 4)", 3},
+      {"pmod(4, 3)", 1},
+      {"pmod(-3, 4)", 1},
+      {"pmod(-4, 3)", 2},
+      {"pmod(3, -4)", -1},
+      {"pmod(4, -3)", -2},
+    });
+  }
 }
