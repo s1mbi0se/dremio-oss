@@ -31,4 +31,15 @@ public class TestMathFunctions extends BaseTestFunction {
       {"c0 + c1", 1.1f, 2.2f, 3.3f}
     });
   }
+
+  @Test
+  public void testFactorialFunctions() throws Exception {
+    testFunctions(new Object[][]{
+      {"factorial(c0)", 1, 1L},
+      {"factorial(c0)", 2, 2L},
+      {"factorial(c0)", 3, 6L},
+      {"factorial(c0)", 4, 24L},
+      {"factorial(c0)", 20, 2432902008176640000L},
+    });
+  }
 }
