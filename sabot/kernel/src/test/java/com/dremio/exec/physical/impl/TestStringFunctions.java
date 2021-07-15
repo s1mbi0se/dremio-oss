@@ -483,4 +483,19 @@ public class TestStringFunctions extends BaseTestFunction {
     });
   }
 
+  @Test
+  public void getJsonObject(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      { "get_json_object(c0, c1)","{ \"firstName\": \"John\",\"lastName\" : \"doe\", \"age\" : 26 }",
+        "$.firstName",
+        "John"},
+      { "get_json_object(c0, c1)","{ \"firstName\": \"John\", \"lastName\" : \"doe\", \"age\" : 26 }",
+        "$.age",
+        "26"},
+      { "get_json_object(c0, c1)","{ \"fruits\": [\"apple\", \"banana\"] }",
+        "$.fruits[1]",
+        "banana"}
+    });
+  }
+
 }
