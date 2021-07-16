@@ -375,6 +375,42 @@ public class DateTypeFunctions {
     }
 
     @SuppressWarnings("unused")
+    @FunctionTemplate(names = {"last_day"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
+    public static class LastDayDate implements SimpleFunction {
+      @Param DateMilliHolder in;
+      @Output DateMilliHolder out;
+      @Workspace org.joda.time.LocalDateTime date;
+
+      @Override
+      public void setup() {
+      }
+
+      @Override
+      public void eval() {
+        date = new org.joda.time.LocalDateTime(in.value, org.joda.time.DateTimeZone.UTC);
+        out.value = com.dremio.common.util.DateTimes.toMillis(date.dayOfMonth().withMaximumValue());
+      }
+    }
+
+    @SuppressWarnings("unused")
+    @FunctionTemplate(names = {"last_day"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
+    public static class LastDayTimestamp implements SimpleFunction {
+      @Param TimeStampMilliHolder in;
+      @Output DateMilliHolder out;
+      @Workspace org.joda.time.LocalDateTime date;
+
+      @Override
+      public void setup() {
+      }
+
+      @Override
+      public void eval() {
+        date = new org.joda.time.LocalDateTime(in.value, org.joda.time.DateTimeZone.UTC);
+        out.value = com.dremio.common.util.DateTimes.toMillis(date.dayOfMonth().withMaximumValue());
+      }
+    }
+
+    @SuppressWarnings("unused")
     @FunctionTemplate(names = {"date_add", "add"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls=NullHandling.NULL_IF_NULL)
     public static class DateTimeAddFunction implements SimpleFunction {
     @Param DateMilliHolder left;
@@ -525,4 +561,330 @@ public class DateTypeFunctions {
         }
     }
 
+    @FunctionTemplate(name = "second", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class SecondDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getSecondOfMinute();
+        out.value += (dateTime.getMillisOfSecond()) / org.apache.arrow.vector.util.DateUtility.secondsToMillis;
+      }
+    }
+
+    @FunctionTemplate(name = "minute", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class MinuteDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getMinuteOfHour();
+      }
+    }
+
+    @FunctionTemplate(name = "hour", scope = FunctionTemplate.FunctionScope.SIMPLE,
+      nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class HourDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getHourOfDay();
+      }
+    }
+
+    @FunctionTemplate(names = {"day", "dayofmonth"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class DayDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getDayOfMonth();
+      }
+    }
+
+    @FunctionTemplate(name = "month", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class MonthDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getMonthOfYear();
+      }
+    }
+
+    @FunctionTemplate(name = "year", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class YearDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getYear();
+      }
+    }
+
+    @FunctionTemplate(names = {"yearweek", "weekofyear"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class WeekDateMilli implements SimpleFunction {
+
+      @Param DateMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getWeekOfWeekyear();
+      }
+    }
+
+    @FunctionTemplate(name = "second", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class SecondTimeMilli implements SimpleFunction {
+
+      @Param TimeMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getSecondOfMinute();
+        out.value += (dateTime.getMillisOfSecond()) / org.apache.arrow.vector.util.DateUtility.secondsToMillis;
+      }
+    }
+
+    @FunctionTemplate(name = "minute", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class MinuteTimeMilli implements SimpleFunction {
+
+      @Param TimeMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getMinuteOfHour();
+      }
+    }
+
+    @FunctionTemplate(name = "hour", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class HourTimeMilli implements SimpleFunction {
+
+      @Param TimeMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getHourOfDay();
+      }
+    }
+
+    @FunctionTemplate(name = "second", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class SecondTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getSecondOfMinute();
+        out.value += (dateTime.getMillisOfSecond()) / org.apache.arrow.vector.util.DateUtility.secondsToMillis;
+      }
+    }
+
+    @FunctionTemplate(name = "minute", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class MinuteTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getMinuteOfHour();
+      }
+    }
+
+    @FunctionTemplate(name = "hour", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class HourTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getHourOfDay();
+      }
+    }
+
+    @FunctionTemplate(names = {"day", "dayofmonth"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class DayTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getDayOfMonth();
+      }
+    }
+
+    @FunctionTemplate(name = "month", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class MonthTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getMonthOfYear();
+      }
+    }
+
+    @FunctionTemplate(name = "year", scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class YearTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getYear();
+      }
+    }
+
+    @FunctionTemplate(names = {"yearweek", "weekofyear"}, scope = FunctionTemplate.FunctionScope.SIMPLE, nulls = FunctionTemplate.NullHandling.NULL_IF_NULL)
+    public static class WeekTimeStampMilli implements SimpleFunction {
+
+      @Param TimeStampMilliHolder in;
+      @Output BigIntHolder out;
+      @Workspace org.joda.time.MutableDateTime dateTime;
+
+      public void setup() {
+        dateTime = new org.joda.time.MutableDateTime(
+          org.joda.time.chrono.DayOfWeekFromSundayChronology.getISOInstanceInUTC());
+      }
+
+      public void eval() {
+        dateTime.setMillis(in.value);
+
+        out.value = dateTime.getWeekOfWeekyear();
+      }
+    }
 }

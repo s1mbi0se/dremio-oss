@@ -15,7 +15,8 @@
  */
 package com.dremio.exec.physical.impl;
 
-import static com.dremio.sabot.Fixtures.ts;
+import static com.dremio.sabot.Fixtures.*;
+import static com.dremio.sabot.Fixtures.time;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -69,6 +70,49 @@ public class TestDateTimeFunctions extends BaseTestFunction {
       {"unix_timestamp(c0, 'YYYY-MM-DD\"T\"HH24:MI:SS.FFFTZO')", "1970-01-01T01:00:00.000-01:00", 7200L /*1970-01-01T02:00:00*/},
       {"unix_timestamp(c0, 'YYYY-MM-DD\"T\"HH24:MI:SS.FFFTZO')", "1970-01-01T01:00:00.000+01:00", 0L /*1970-01-01T00:00:00*/},
       {"unix_timestamp(c0, 'YYYY-MM-DD\"T\"HH24:MI:SS.FFFTZO')", "1970-01-01T02:00:00.000+01:00", 3600L /*1970-01-01T01:00:00*/},
+    });
+  }
+
+  @Test
+  public void testFromTimeStamp() {
+    testFunctions(new Object[][]{
+      {"extractMinute(c0)", ts("1970-01-02T10:20:33"), 20l},
+      {"extractHour(c0)", ts("1970-01-02T10:20:33"), 10l},
+      {"extractDay(c0)", ts("1970-01-02T10:20:33"), 2l},
+      {"extractMonth(c0)", ts("1970-01-02T10:20:33"), 1l},
+      {"extractYear(c0)", ts("1970-01-02T10:20:33"), 1970l},
+      {"extractSecond(c0)", ts("1970-01-02T10:20:33"), 33l},
+      {"minute(c0)", ts("1970-01-02T10:20:33"), 20l},
+      {"hour(c0)", ts("1970-01-02T10:20:33"), 10l},
+      {"day(c0)", ts("1970-01-02T10:20:33"), 2l},
+      {"month(c0)", ts("1970-01-02T10:20:33"), 1l},
+      {"year(c0)", ts("1970-01-02T10:20:33"), 1970l},
+      {"second(c0)", ts("1970-01-02T10:20:33"), 33l},
+    });
+  }
+
+  @Test
+  public void testFromDate() {
+    testFunctions(new Object[][]{
+      {"extractDay(c0)", date("1970-01-02"), 2l},
+      {"extractMonth(c0)", date("1970-01-02"), 1l},
+      {"extractYear(c0)", date("1970-01-02"), 1970l},
+      {"day(c0)", date("1970-01-02"), 2l},
+      {"dayofmonth(c0)", date("1970-01-02"), 2l},
+      {"month(c0)", date("1970-01-02"), 1l},
+      {"year(c0)", date("1970-01-02"), 1970l},
+    });
+  }
+
+  @Test
+  public void testFromTime() {
+    testFunctions(new Object[][]{
+      {"extractMinute(c0)", time("10:20:33"), 20l},
+      {"extractHour(c0)", time("10:20:33"), 10l},
+      {"extractSecond(c0)", time("10:20:33"), 33l},
+      {"minute(c0)", time("10:20:33"), 20l},
+      {"hour(c0)", time("10:20:33"), 10l},
+      {"second(c0)", time("10:20:33"), 33l},
     });
   }
 

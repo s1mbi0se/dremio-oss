@@ -190,4 +190,27 @@ public class MathFunctions{
     }
   }
 
+  @FunctionTemplate(name = "factorial", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Factorial implements SimpleFunction {
+
+    @Param BigIntHolder in;
+    @Output BigIntHolder out;
+
+    public void setup() {
+    }
+
+    public void eval() {
+      // For numbers greater than 20 causes an overflow.
+      if (in.value > 20) {
+        out.value = 0;
+      } else {
+        long factorial = 1;
+        for(long i = 1; i <= in.value; ++i) {
+          factorial *= i;
+        }
+        out.value = factorial;
+      }
+    }
+  }
+
 }

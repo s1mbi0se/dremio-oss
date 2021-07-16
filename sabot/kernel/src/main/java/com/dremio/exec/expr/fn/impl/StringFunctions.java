@@ -17,17 +17,21 @@ package com.dremio.exec.expr.fn.impl;
 
 import static com.dremio.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder;
 
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Base64;
+import java.util.Locale;
+import java.util.Optional;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
 
 import javax.inject.Inject;
 
+import com.jayway.jsonpath.JsonPath;
 import org.apache.arrow.memory.ArrowBuf;
-import org.apache.arrow.vector.holders.BigIntHolder;
-import org.apache.arrow.vector.holders.BitHolder;
-import org.apache.arrow.vector.holders.IntHolder;
-import org.apache.arrow.vector.holders.NullableVarCharHolder;
-import org.apache.arrow.vector.holders.VarBinaryHolder;
-import org.apache.arrow.vector.holders.VarCharHolder;
+import org.apache.arrow.vector.holders.*;
 
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
@@ -275,6 +279,58 @@ public class StringFunctions{
         } while (result);
         matcher.appendTail(sb);
         final byte [] bytea = sb.toString().getBytes(java.nio.charset.Charset.forName("UTF-8"));
+        out.buffer = buffer = buffer.reallocIfNeeded(bytea.length);
+        out.buffer.setBytes(out.start, bytea);
+        out.end = bytea.length;
+      }
+      else {
+        // There is no matches, copy the input bytes into the output buffer
+        out.buffer = buffer = buffer.reallocIfNeeded(input.end - input.start);
+        out.buffer.setBytes(0, input.buffer, input.start, input.end - input.start);
+        out.end = input.end - input.start;
+      }
+    }
+  }
+
+  /*
+   * Replace all substring that match the regular expression with replacement.
+   */
+  @FunctionTemplate(name = "regexp_extract", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class RegexpExtract implements SimpleFunction {
+
+    @Param VarCharHolder input;
+    @Param(constant=true) VarCharHolder pattern;
+    @Param IntHolder index;
+    @Inject ArrowBuf buffer;
+    @Workspace java.util.regex.Matcher matcher;
+    @Output VarCharHolder out;
+    @Inject FunctionErrorContext errCtx;
+
+    @Override
+    public void setup() {
+      matcher = com.dremio.exec.expr.fn.impl.StringFunctionUtil.compilePattern(
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(pattern.start, pattern.end, pattern.buffer),
+        errCtx
+      ).matcher("");
+    }
+
+    @Override
+    public void eval() {
+      out.start = 0;
+      matcher.reset(
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(input.start, input.end, input.buffer));
+      boolean result = matcher.find();
+      if (result) {
+        String r;
+        try {
+          r = matcher.group(index.value);
+        } catch (IndexOutOfBoundsException e) {
+          throw errCtx.error()
+            .message("Invalid group index '%s'", index.value)
+            .addContext("exception", e.getMessage())
+            .build();
+        }
+        final byte [] bytea = r.getBytes(java.nio.charset.Charset.forName("UTF-8"));
         out.buffer = buffer = buffer.reallocIfNeeded(bytea.length);
         out.buffer.setBytes(out.start, bytea);
         out.end = bytea.length;
@@ -556,20 +612,11 @@ public class StringFunctions{
 
     @Override
     public void eval() {
-      out.buffer = buffer = buffer.reallocIfNeeded(input.end- input.start);
       out.start = 0;
       out.end = input.end - input.start;
-
-      for (int id = input.start; id < input.end; id++) {
-        byte  currentByte = input.buffer.getByte(id);
-
-        // 'A - Z' : 0x41 - 0x5A
-        // 'a - z' : 0x61 - 0x7A
-        if (currentByte >= 0x41 && currentByte <= 0x5A) {
-          currentByte += 0x20;
-        }
-        out.buffer.setByte(id - input.start, currentByte) ;
-      }
+      out.buffer = buffer = buffer.reallocIfNeeded(out.end);
+      final String s = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(input.start, input.end, input.buffer);
+      out.buffer.setBytes(0, s.toLowerCase().getBytes());
     }
   }
 
@@ -589,20 +636,86 @@ public class StringFunctions{
 
     @Override
     public void eval() {
-      out.buffer = buffer = buffer.reallocIfNeeded(input.end- input.start);
       out.start = 0;
       out.end = input.end - input.start;
+      out.buffer = buffer = buffer.reallocIfNeeded(out.end);
+      final String s = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(input.start, input.end, input.buffer);
+      out.buffer.setBytes(0, s.toUpperCase().getBytes());
+    }
+  }
 
-      for (int id = input.start; id < input.end; id++) {
-        byte currentByte = input.buffer.getByte(id);
+  /*
+   * Find substring in a string subset separated by comma.
+   */
+  @FunctionTemplate(name = "find_in_set", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class FindInSet implements SimpleFunction {
 
-        // 'A - Z' : 0x41 - 0x5A
-        // 'a - z' : 0x61 - 0x7A
-        if (currentByte >= 0x61 && currentByte <= 0x7A) {
-          currentByte -= 0x20;
+    @Param VarCharHolder in;
+    @Param VarCharHolder text;
+    @Output IntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      final String look = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
+      final String[] set =
+        com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(text.start, text.end, text.buffer).split(",", -1);
+
+      for (int i = 0; i < set.length; i++) {
+        if (set[i].equals(look)) {
+          out.value = i + 1;
+          break;
         }
-        out.buffer.setByte(id - input.start, currentByte) ;
       }
+    }
+  }
+
+  /*
+   * Define the crc32 checksum value
+   */
+  @FunctionTemplate(name = "crc32", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Crc32VarChar implements SimpleFunction {
+
+    @Param VarCharHolder in;
+    @Output BigIntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(in.start, buf);
+      CRC32 crc = new CRC32();
+      crc.update(buf);
+      out.value = crc.getValue();
+    }
+  }
+
+  /*
+   * Define the crc32 checksum value
+   */
+  @FunctionTemplate(name = "crc32", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Crc32VarBinary implements SimpleFunction {
+
+    @Param VarBinaryHolder in;
+    @Output BigIntHolder out;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(in.start, buf);
+      CRC32 crc = new CRC32();
+      crc.update(buf);
+      out.value = crc.getValue();
     }
   }
 
@@ -1481,7 +1594,7 @@ public class StringFunctions{
     }
   }
 
-  @FunctionTemplate(name = "from_hex", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  @FunctionTemplate(names = {"from_hex", "unhex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
   public static class FromHex implements SimpleFunction {
     @Param  VarCharHolder in;
     @Output VarBinaryHolder out;
@@ -1501,8 +1614,8 @@ public class StringFunctions{
     }
   }
 
-  @FunctionTemplate(name = "to_hex", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
-  public static class ToHex implements SimpleFunction {
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexVarBinary implements SimpleFunction {
     @Param  VarBinaryHolder in;
     @Output VarCharHolder   out;
     @Workspace Charset charset;
@@ -1524,6 +1637,137 @@ public class StringFunctions{
       out.start = 0;
       out.end = buf.length;
       out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexVarChar implements SimpleFunction {
+    @Param  VarCharHolder   in;
+    @Output VarCharHolder   out;
+    @Workspace Charset charset;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+      charset = java.nio.charset.Charset.forName("UTF-8");
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = com.dremio.common.util.DremioStringUtils.toBinaryStringNoFormat(io.netty.buffer.NettyArrowBuf.unwrapBuffer(in.buffer), in
+        .start, in.end).getBytes(charset);
+      out.buffer = buffer = buffer.reallocIfNeeded(buf.length);
+      buffer.setBytes(0, buf);
+      buffer.setIndex(0, buf.length);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(names = {"hex", "to_hex"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ToHexBigInt implements SimpleFunction{
+    @Param BigIntHolder in;
+    @Output VarCharHolder   out;
+    @Workspace Charset charset;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+      charset = java.nio.charset.Charset.forName("UTF-8");
+    }
+
+    @Override
+    public void eval() {
+      String hex_format = String.format("%X", in.value);
+      byte[] buf = hex_format.getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  @FunctionTemplate(name = "parse_url", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class ParseURL implements SimpleFunction{
+    @Param VarCharHolder   in;
+    @Param(constant = true) VarCharHolder   partToExtract;
+    @Output NullableVarCharHolder   out;
+    @Inject ArrowBuf buffer;
+
+    @Inject FunctionErrorContext errCtx;
+
+    @Workspace String urlPart;
+
+    @Override
+    public void setup() {
+      urlPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(partToExtract.start,
+        partToExtract.end, partToExtract.buffer);
+    }
+
+    @Override
+    public void eval() {
+      String url = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
+      Optional<String> extractPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.parseURL(url, urlPart, errCtx);
+
+      extractPart.ifPresent(val ->{
+        out.isSet = 1;
+        byte[] buf = val.getBytes();
+        buffer.setBytes(0, buf);
+
+        out.start = 0;
+        out.end = buf.length;
+        out.buffer = buffer;
+      });
+    }
+  }
+
+  @FunctionTemplate(name = "parse_url", scope = FunctionScope.SIMPLE, nulls = NullHandling.INTERNAL)
+  public static class ParseURLQueryKey implements SimpleFunction{
+    @Param VarCharHolder   in;
+    @Param(constant = true) VarCharHolder   partToExtract;
+    @Param VarCharHolder   queryKey;
+    @Output NullableVarCharHolder   out;
+    @Inject ArrowBuf buffer;
+    @Inject FunctionErrorContext errCtx;
+
+    @Workspace String urlPart;
+    @Workspace String lastKey;
+    @Workspace Pattern pattern;
+
+    @Override
+    public void setup() {
+      lastKey = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(queryKey.start, queryKey.end,
+        queryKey.buffer);
+      pattern = Pattern.compile("(&|^)" + lastKey + "=([^&]*)");
+      urlPart = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(partToExtract.start,
+        partToExtract.end, partToExtract.buffer);
+    }
+
+    @Override
+    public void eval() {
+      // Compiles pattern for the key given.
+      String key = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(queryKey.start, queryKey.end,
+        queryKey.buffer);
+      if (!key.equals(lastKey)) {
+        pattern = Pattern.compile("(&|^)" + key + "=([^&]*)");
+      }
+      lastKey = key;
+
+      String url = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.toStringFromUTF8(in.start, in.end, in.buffer);
+      Optional<String> extractValue = com.dremio.exec.expr.fn.impl.StringFunctionHelpers.parseURLQueryKey(url, urlPart,
+        pattern, errCtx);
+      extractValue.ifPresent(val ->{
+        out.isSet = 1;
+        byte[] buf = val.getBytes();
+        buffer.setBytes(0, buf);
+
+        out.start = 0;
+        out.end = buf.length;
+        out.buffer = buffer;
+      });
     }
   }
 
@@ -1591,6 +1835,81 @@ public class StringFunctions{
       out.start = out.end = 0;
       out.buffer.setByte(0, in.value);
       ++out.end;
+    }
+  }
+
+  /**
+   * Returns a string with the specified number of spaces.
+   */
+  @FunctionTemplate(names = {"space"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Space implements SimpleFunction {
+
+    @Param IntHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = String.format("%-" + in.value + "s", "").getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns a string binary representation of a specified integer.
+   */
+  @FunctionTemplate(names = {"bin"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class BinaryRepresentationInt implements SimpleFunction {
+
+    @Param IntHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = Long.toBinaryString(in.value).getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns a string binary representation of a specified long (big integer).
+   */
+  @FunctionTemplate(names = {"bin"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class BinaryRepresentationBigInt implements SimpleFunction {
+
+    @Param BigIntHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = Long.toBinaryString(in.value).getBytes();
+      buffer.setBytes(0, buf);
+
+      out.start = 0;
+      out.end = buf.length;
+      out.buffer = buffer;
     }
   }
 
@@ -1715,6 +2034,139 @@ public class StringFunctions{
       out.buffer.setBytes(0, outBytea);
       out.start = 0;
       out.end = outBytea.length;
+    }
+  }
+
+  /**
+   * Returns the base64 encoded string.
+   */
+  @FunctionTemplate(names = {"base64"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Base64VarChar implements SimpleFunction {
+
+    @Param VarBinaryHolder in;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(0, buf);
+      byte[] resultBuf = Base64.getEncoder().encodeToString(buf).getBytes();
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns the base64 decoded binary.
+   */
+  @FunctionTemplate(names = {"unbase64"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class Unbase64VarChar implements SimpleFunction {
+
+    @Param VarCharHolder in;
+    @Output VarBinaryHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      byte[] buf = new byte[in.end - in.start];
+      in.buffer.getBytes(0, buf);
+      byte[] resultBuf = Base64.getDecoder().decode(buf);
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns the result of a search on a json based on the jsonpath string.
+   */
+  @FunctionTemplate(names = {"get_json_object"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class GetJsonObject implements SimpleFunction {
+
+    @Param VarCharHolder json;
+    @Param VarCharHolder search;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+      String search_str = getStringFromVarCharHolder(search);
+
+      String json_str = getStringFromVarCharHolder(json);
+
+      Object result = JsonPath.parse(json_str).read(search_str);
+      String result_str = result.toString();
+
+      byte[] resultBuf = result_str.getBytes();
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns the formatted number as a string with a format like '#,###,###.##', rounded to 'd' decimal places.
+   * If 'd' is 0, the result has no decimal point or fractional part.
+   */
+  @FunctionTemplate(names = {"format_number"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class FormatNumber implements SimpleFunction {
+
+    @Param
+    Float8Holder number;
+    @Param IntHolder d;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+
+      StringBuilder pattern = new StringBuilder("");
+
+      // append the thousands separator
+      pattern.append(",###,##0");
+
+      // append the decimal separator and decimal places
+      if (d.value > 0) {
+        pattern.append(".");
+        for (int i = 0; i < d.value; i++) {
+          pattern.append("0");
+        }
+      }
+
+      DecimalFormat df = new DecimalFormat(pattern.toString(), new DecimalFormatSymbols(Locale.ENGLISH));
+      df.setRoundingMode(RoundingMode.DOWN);
+      String result_str = df.format(number.value);
+
+      byte[] resultBuf = result_str.getBytes();
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
     }
   }
 }

@@ -44,7 +44,9 @@ import com.google.common.base.Preconditions;
 public class BaseTestFunction extends BaseTestOperator {
 
   public static final boolean RUN_INTERPRETED_MODE = true;
+  public static final boolean RUN_COMPILED_MODE = true;
   public static final boolean IGNORE_INTERPRETED_MODE = false;
+  public static final boolean IGNORE_COMPILED_MODE = false;
 
   public void testFunctions(Object[][] tests){
     for(Object[] test : tests){
@@ -58,13 +60,19 @@ public class BaseTestFunction extends BaseTestOperator {
     }
   }
 
+  public void testFunctionsInterpretedOnly(Object[][] tests){
+    for(Object[] test : tests){
+      testFunctionInterpretedOnly((String) test[0], Arrays.copyOfRange(test, 1, test.length));
+    }
+  }
+
   /**
    * Evaluate the given expression using the provided inputs and confirm it results in the expected output. Runs both compiled and interpreted tests.
    * @param expr The expression to evaluate Note that the expression must refer to all the inputs as c0, c1, c2... cn at least once.
    * @param fields All of the input values (n-1), plus the output value (nth value).
    */
   public void testFunction(String stringExpression, Object... fieldsArr) {
-    testFunctionInner(stringExpression, RUN_INTERPRETED_MODE, fieldsArr);
+    testFunctionInner(stringExpression, RUN_INTERPRETED_MODE, RUN_COMPILED_MODE, fieldsArr);
   }
 
   /**
@@ -72,10 +80,18 @@ public class BaseTestFunction extends BaseTestOperator {
    * Used for functions that are not supported in interpreted mode for e.g. gandiva only functions.
    */
   public void testFunctionCompileOnly(String stringExpression, Object... fieldsArr) {
-    testFunctionInner(stringExpression, IGNORE_INTERPRETED_MODE, fieldsArr);
+    testFunctionInner(stringExpression, IGNORE_INTERPRETED_MODE, RUN_COMPILED_MODE, fieldsArr);
   }
 
-  private void testFunctionInner(String stringExpression, boolean runInterpretedMode,
+  /**
+   * Evaluate the given expression only in interpreted mode.
+   * Used for functions that are only supported in interpreted mode (e.g. Dremio only functions).
+   */
+  public void testFunctionInterpretedOnly(String stringExpression, Object... fieldsArr) {
+    testFunctionInner(stringExpression, RUN_INTERPRETED_MODE, IGNORE_COMPILED_MODE, fieldsArr);
+  }
+
+  private void testFunctionInner(String stringExpression, boolean runInterpretedMode, boolean runCompiledMode,
                                  Object[] fieldsArr) {
     try{
       Preconditions.checkArgument(fieldsArr.length > 0, "Must provide an output for a function.");
@@ -100,11 +116,13 @@ public class BaseTestFunction extends BaseTestOperator {
       final Table output = Fixtures.t(Fixtures.th("out"), Fixtures.tr(fieldsArr[fieldsArr.length - 1]));
       Project p = new Project(OpProps.prototype(), null, Arrays.asList(new NamedExpression(expr, new FieldReference("out"))));
 
-      try {
-        validateSingle(p, ProjectOperator.class, input.toGenerator(getTestAllocator()), output, DEFAULT_BATCH);
-      } catch(AssertionError | Exception e) {
-        e.printStackTrace();
-        throw new RuntimeException("Failure while testing function using code compilation.", e);
+      if (runCompiledMode) {
+        try {
+          validateSingle(p, ProjectOperator.class, input.toGenerator(getTestAllocator()), output, DEFAULT_BATCH);
+        } catch (AssertionError | Exception e) {
+          e.printStackTrace();
+          throw new RuntimeException("Failure while testing function using code compilation.", e);
+        }
       }
 
       if (runInterpretedMode) {

@@ -65,4 +65,35 @@ public class ModFunctions {
     }
   }
 
+  @FunctionTemplate(name = "pmod", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class PmodInt implements SimpleFunction {
+
+    @Param
+    BigIntHolder input1;
+    @Param IntHolder input2;
+    @Output IntHolder out;
+
+    public void setup() {
+    }
+
+    public void eval() {
+      out.value = (int) (input2.value == 0 ? input1.value : Math.floorMod(input1.value,  input2.value));
+    }
+  }
+
+  @FunctionTemplate(name = "pmod", scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class PodBigInt implements SimpleFunction {
+
+    @Param BigIntHolder input1;
+    @Param BigIntHolder input2;
+    @Output BigIntHolder out;
+
+    public void setup() {
+    }
+
+    public void eval() {
+      out.value = (long) (input2.value == 0 ? input1.value : Math.floorMod(input1.value,  input2.value));
+    }
+  }
+
 }

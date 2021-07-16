@@ -24,6 +24,10 @@ import com.dremio.exec.expr.fn.FunctionErrorContext;
 import com.google.common.base.Charsets;
 
 import io.netty.util.internal.PlatformDependent;
+import java.net.URL;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class StringFunctionHelpers {
   static final org.slf4j.Logger logger = org.slf4j.LoggerFactory.getLogger(StringFunctionHelpers.class);
@@ -219,6 +223,59 @@ public class StringFunctionHelpers {
     }
     int[] dateFields = memGetDate(buf.memoryAddress(), start, end);
     return CHRONOLOGY.getDateTimeMillis(dateFields[0], dateFields[1], dateFields[2], 0);
+  }
+
+  public static Optional<String> parseURL(String urlStr, String partToExtract, FunctionErrorContext errCtx){
+    final URL url;
+    try {
+      url = new URL(urlStr);
+    } catch (Exception e) {
+      return Optional.empty();
+    }
+
+    if (partToExtract.equals("HOST")) {
+      return Optional.ofNullable(url.getHost());
+    }
+    if (partToExtract.equals("PATH")) {
+      return Optional.ofNullable(url.getPath());
+    }
+    if (partToExtract.equals("QUERY")) {
+      return Optional.ofNullable(url.getQuery());
+    }
+    if (partToExtract.equals("REF")) {
+      return Optional.ofNullable(url.getRef());
+    }
+    if (partToExtract.equals("PROTOCOL")) {
+      return Optional.ofNullable(url.getProtocol());
+    }
+    if (partToExtract.equals("FILE")) {
+      return Optional.ofNullable(url.getFile());
+    }
+    if (partToExtract.equals("AUTHORITY")) {
+      return Optional.ofNullable(url.getAuthority());
+    }
+    if (partToExtract.equals("USERINFO")) {
+      return Optional.ofNullable(url.getUserInfo());
+    }
+
+    return Optional.empty();
+  }
+
+  public static Optional<String> parseURLQueryKey(String urlStr, String partToExtract, Pattern keyPattern, FunctionErrorContext errCtx){
+    if (!partToExtract.equals("QUERY")) {
+      return Optional.empty();
+    }
+    Optional<String> query = parseURL(urlStr, partToExtract, errCtx);
+    if (!query.isPresent()){
+      return Optional.empty();
+    }
+
+    Matcher m = keyPattern.matcher(query.get());
+    if (m.find()) {
+      return Optional.ofNullable(m.group(2));
+    }
+
+    return Optional.empty();
   }
 
   /**
