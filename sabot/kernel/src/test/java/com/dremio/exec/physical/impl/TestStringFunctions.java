@@ -498,4 +498,15 @@ public class TestStringFunctions extends BaseTestFunction {
     });
   }
 
+  @Test
+  public void formatNumber(){
+    testFunctionsInterpretedOnly(new Object[][]{
+      { "format_number(c0, c1)", 10123.4444, 2, "10,123.44"},
+      { "format_number(c0, c1)", 123456789.1234, 3, "123,456,789.123"},
+      { "format_number(c0, c1)", 987654321.987654, 0, "987,654,321"},
+      { "format_number(c0, c1)", 987654321.987654, -1, "987,654,321"},
+      { "format_number(c0, c1)", -987321654.97853, 1, "-987,321,654.9"},
+    });
+  }
+
 }

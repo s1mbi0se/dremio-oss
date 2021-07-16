@@ -17,8 +17,12 @@ package com.dremio.exec.expr.fn.impl;
 
 import static com.dremio.exec.expr.fn.impl.StringFunctionHelpers.getStringFromVarCharHolder;
 
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.Base64;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.CRC32;
@@ -27,12 +31,7 @@ import javax.inject.Inject;
 
 import com.jayway.jsonpath.JsonPath;
 import org.apache.arrow.memory.ArrowBuf;
-import org.apache.arrow.vector.holders.BigIntHolder;
-import org.apache.arrow.vector.holders.BitHolder;
-import org.apache.arrow.vector.holders.IntHolder;
-import org.apache.arrow.vector.holders.NullableVarCharHolder;
-import org.apache.arrow.vector.holders.VarBinaryHolder;
-import org.apache.arrow.vector.holders.VarCharHolder;
+import org.apache.arrow.vector.holders.*;
 
 import com.dremio.exec.expr.SimpleFunction;
 import com.dremio.exec.expr.annotations.FunctionTemplate;
@@ -2115,6 +2114,52 @@ public class StringFunctions{
 
       Object result = JsonPath.parse(json_str).read(search_str);
       String result_str = result.toString();
+
+      byte[] resultBuf = result_str.getBytes();
+      buffer.setBytes(0, resultBuf);
+
+      out.start = 0;
+      out.end = resultBuf.length;
+      out.buffer = buffer;
+    }
+  }
+
+  /**
+   * Returns the formatted number as a string with a format like '#,###,###.##', rounded to 'd' decimal places.
+   * If 'd' is 0, the result has no decimal point or fractional part.
+   */
+  @FunctionTemplate(names = {"format_number"}, scope = FunctionScope.SIMPLE, nulls = NullHandling.NULL_IF_NULL)
+  public static class FormatNumber implements SimpleFunction {
+
+    @Param
+    Float8Holder number;
+    @Param IntHolder d;
+    @Output VarCharHolder out;
+    @Inject ArrowBuf buffer;
+
+    @Override
+    public void setup() {
+    }
+
+    @Override
+    public void eval() {
+
+      StringBuilder pattern = new StringBuilder("");
+
+      // append the thousands separator
+      pattern.append(",###,##0");
+
+      // append the decimal separator and decimal places
+      if (d.value > 0) {
+        pattern.append(".");
+        for (int i = 0; i < d.value; i++) {
+          pattern.append("0");
+        }
+      }
+
+      DecimalFormat df = new DecimalFormat(pattern.toString(), new DecimalFormatSymbols(Locale.ENGLISH));
+      df.setRoundingMode(RoundingMode.DOWN);
+      String result_str = df.format(number.value);
 
       byte[] resultBuf = result_str.getBytes();
       buffer.setBytes(0, resultBuf);
